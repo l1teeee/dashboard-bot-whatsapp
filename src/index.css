@@ -1,0 +1,37 @@
+﻿@import "tailwindcss";
+
+@theme {
+  --color-surface: #ffffff;
+  --color-canvas: #f6f7f9;
+  --color-border: #e3e6ea;
+  --color-ink: #14181f;
+  --color-ink-soft: #5b6472;
+  --color-brand: #4338ca;
+  --color-brand-soft: #eef2ff;
+
+  --color-pending: #b45309;
+  --color-pending-soft: #fef3c7;
+  --color-processing: #1d4ed8;
+  --color-processing-soft: #dbeafe;
+  --color-completed: #15803d;
+  --color-completed-soft: #dcfce7;
+  --color-cancelled: #b91c1c;
+  --color-cancelled-soft: #fee2e2;
+
+  --radius-card: 0.875rem;
+
+  --color-background: #f6f7f9;
+  --color-foreground: #14181f;
+  --color-card: #ffffff;
+  --color-card-foreground: #14181f;
+  --color-muted: #f6f7f9;
+  --color-muted-foreground: #5b6472;
+  --color-primary: #4338ca;
+  --color-primary-foreground: #ffffff;
+  --color-accent: #eef2ff;
+  --color-accent-foreground: #4338ca;
+}
+
+body {
+  @apply bg-canvas text-ink;
+}
