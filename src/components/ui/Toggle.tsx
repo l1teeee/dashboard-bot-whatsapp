@@ -1,28 +1,3 @@
-﻿import React from 'react';
-import { cn } from '@/lib/cn';
-
-interface ToggleProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  disabled?: boolean;
-}
-
-export const Toggle = React.forwardRef<HTMLInputElement, ToggleProps>(
-  ({ className, label, disabled, ...props }, ref) => (
-    <label className="flex items-center gap-2 cursor-pointer">
-      <input
-        ref={ref}
-        type="checkbox"
-        disabled={disabled}
-        className={cn(
-          'w-5 h-5 rounded-sm border border-border accent-brand cursor-pointer',
-          disabled && 'opacity-50 cursor-not-allowed',
-          className,
-        )}
-        {...props}
-      />
-      {label && <span className="text-sm font-medium text-ink">{label}</span>}
-    </label>
-  ),
-);
-
-Toggle.displayName = 'Toggle';
+import React from 'react'; import { Switch } from 'radix-ui'; import { cn } from '@/lib/cn';
+interface ToggleProps { label?: string; disabled?: boolean; checked: boolean; onCheckedChange: (checked: boolean) => void; className?: string; 'aria-label'?: string; }
+export const Toggle = React.forwardRef<HTMLButtonElement, ToggleProps>(({ className, label, disabled, checked, onCheckedChange, ...props }, ref) => <label className={cn('flex items-center gap-3', disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer')}><Switch.Root ref={ref} checked={checked} onCheckedChange={onCheckedChange} disabled={disabled} className={cn('relative h-7 w-12 rounded-full border border-ink-dark bg-surface-raised outline-none transition-colors focus-ring data-[state=checked]:bg-mint', className)} {...props}><Switch.Thumb className="block h-5 w-5 translate-x-1 rounded-full bg-warm transition-transform data-[state=checked]:translate-x-6"/></Switch.Root>{label && <span className="text-sm font-bold">{label}</span>}</label>); Toggle.displayName = 'Toggle';

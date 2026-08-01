@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { fadeUp, softScale, staggerContainer } from '@/lib/motion';
 import { Trash2, Flame, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
@@ -15,6 +16,7 @@ export interface KanbanBoardProps<TItem> {
   items: TItem[];
   getItemId: (item: TItem) => string;
   getItemColumn: (item: TItem) => string;
+  getItemPosition?: (item: TItem) => number;
   renderItem: (item: TItem, isDragging: boolean) => React.ReactNode;
   isDraggable?: (item: TItem) => boolean;
   canDrop?: (item: TItem, columnId: string) => boolean;
@@ -36,7 +38,9 @@ interface DragState {
   pointerY: number;
 }
 
-function DropIndicator({ before, column }: { before: string | null; column: string }) {
+const END_INDICATOR = '__end__';
+
+function DropIndicator({ before, column }: { before: string; column: string }) {
   return (
     <div
       data-before={before}
@@ -47,24 +51,12 @@ function DropIndicator({ before, column }: { before: string | null; column: stri
 }
 
 function getNearestIndicator(clientY: number, indicators: HTMLElement[]): HTMLElement | null {
-  const el = indicators.reduce(
-    (closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = clientY - (box.top + box.height / 2);
-
-      if (offset < 0 && offset > (closest.offset ?? Number.NEGATIVE_INFINITY)) {
-        return { offset, element: child };
-      }
-
-      return closest;
-    },
-    { offset: Number.NEGATIVE_INFINITY, element: indicators[0] } as {
-      offset: number;
-      element: HTMLElement;
-    },
-  ).element;
-
-  return el;
+  if (indicators.length === 0) return null;
+  return indicators.reduce((nearest, indicator) => {
+    const nearestDistance = Math.abs(clientY - nearest.getBoundingClientRect().top);
+    const distance = Math.abs(clientY - indicator.getBoundingClientRect().top);
+    return distance < nearestDistance ? indicator : nearest;
+  });
 }
 
 export function KanbanBoard<TItem>({
@@ -72,6 +64,7 @@ export function KanbanBoard<TItem>({
   items,
   getItemId,
   getItemColumn,
+  getItemPosition,
   renderItem,
   isDraggable,
   canDrop,
@@ -314,10 +307,12 @@ export function KanbanBoard<TItem>({
 
           if (nearestIndicator) {
             const beforeId = nearestIndicator.getAttribute('data-before');
-            const columnItems = items.filter((item) => getItemColumn(item) === columnId);
+            const columnItems = items
+              .filter((item) => getItemColumn(item) === columnId)
+              .sort((a, b) => (getItemPosition?.(a) ?? 0) - (getItemPosition?.(b) ?? 0));
 
             let toIndex: number;
-            if (beforeId === '-1') {
+            if (beforeId === END_INDICATOR) {
               toIndex = columnItems.length;
             } else if (beforeId) {
               const beforeItemIndexInColumn = columnItems.findIndex(
@@ -371,16 +366,21 @@ export function KanbanBoard<TItem>({
 
   return (
     <>
-      <div
+      <motion.div
         ref={boardRef}
-        className={cn('grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4', className)}
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className={cn('grid auto-cols-[84vw] grid-flow-col gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-subtle md:grid-flow-row md:grid-cols-2 md:auto-cols-auto xl:grid-cols-4', className)}
       >
-        {draggedItemId !== null && onDeleteDrop && (
+        <AnimatePresence initial={false}>
+          {draggedItemId !== null && onDeleteDrop && (
           <motion.div
             layout
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            variants={fadeUp}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className="col-span-full"
           >
             <div
@@ -399,10 +399,13 @@ export function KanbanBoard<TItem>({
               </div>
             </div>
           </motion.div>
-        )}
+          )}
+        </AnimatePresence>
 
         {columns.map((column) => {
-          const columnItems = items.filter((item) => getItemColumn(item) === column.id);
+          const columnItems = items
+            .filter((item) => getItemColumn(item) === column.id)
+            .sort((a, b) => (getItemPosition?.(a) ?? 0) - (getItemPosition?.(b) ?? 0));
 
           const canDropToColumn =
             !draggedItem ||
@@ -416,11 +419,13 @@ export function KanbanBoard<TItem>({
             draggedItemId !== null && dragState?.fromColumn !== column.id && !canDropToColumn;
 
           return (
-            <div
+            <motion.div
               key={column.id}
               data-kanban-column={column.id}
+              layout
+              variants={softScale}
               className={cn(
-                'bg-surface border border-border rounded-lg flex flex-col overflow-hidden',
+                'min-h-[420px] snap-start bg-surface border border-border rounded-[24px] flex flex-col overflow-hidden',
                 column.accentClass || 'border-t-4 border-t-pending',
                 isValidDropTarget && 'ring-2 ring-brand ring-offset-2 border-dashed',
                 isInvalidDropTarget && 'opacity-40 cursor-not-allowed',
@@ -452,7 +457,6 @@ export function KanbanBoard<TItem>({
                   renderEmpty?.(column.id)
                 ) : (
                   <>
-                    <DropIndicator before={null} column={column.id} />
                     {columnItems.map((item) => {
                       const itemId = getItemId(item);
                       const isDragging = draggedItemId === itemId;
@@ -460,9 +464,11 @@ export function KanbanBoard<TItem>({
 
                       return (
                         <div key={itemId}>
+                          <DropIndicator before={itemId} column={column.id} />
                           <motion.div
                             layout
                             layoutId={itemId}
+                            transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.8 }}
                             className={cn(
                               'relative',
                               isDragging && 'opacity-40',
@@ -486,17 +492,17 @@ export function KanbanBoard<TItem>({
                               )}
                             </div>
                           </motion.div>
-                          <DropIndicator before={itemId} column={column.id} />
                         </div>
                       );
                     })}
+                    <DropIndicator before={END_INDICATOR} column={column.id} />
                   </>
                 )}
               </div>
-            </div>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {dragState && (
         <div

@@ -1,304 +1,50 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, SearchX, LayoutDashboard, History, UtensilsCrossed } from 'lucide-react';
+import { Dialog } from 'radix-ui';
+import { Search, SearchX, LayoutDashboard, History, UtensilsCrossed, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useOrders } from '@/hooks/useOrders';
 import { STATUS_META } from '@/lib/orderStatus';
 import { formatCurrency, formatPhone } from '@/lib/format';
 
-interface NavigationItem {
-  id: string;
-  type: 'nav';
-  label: string;
-  path: string;
-  icon: React.ReactNode;
-}
-
-interface OrderItem {
-  id: string;
-  type: 'order';
-  orderId: number;
-  phone: string;
-  status: string;
-  statusLabel: string;
-  statusDot: string;
-  total: number;
-}
-
-type CommandItem = NavigationItem | OrderItem;
-
-const NAV_ITEMS: NavigationItem[] = [
-  {
-    id: 'nav-dashboard',
-    type: 'nav',
-    label: 'Pedidos',
-    path: '/',
-    icon: <LayoutDashboard className="w-4 h-4" />,
-  },
-  {
-    id: 'nav-orders',
-    type: 'nav',
-    label: 'Historial',
-    path: '/orders',
-    icon: <History className="w-4 h-4" />,
-  },
-  {
-    id: 'nav-menu',
-    type: 'nav',
-    label: 'Menu',
-    path: '/menu',
-    icon: <UtensilsCrossed className="w-4 h-4" />,
-  },
+type CommandItem = { id: string; type: 'nav' | 'order'; label?: string; path?: string; icon?: React.ReactNode; orderId?: number; phone?: string; status?: string; total?: number; };
+const navigation: CommandItem[] = [
+  { id: 'nav-dashboard', type: 'nav', label: 'En vivo', path: '/', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { id: 'nav-orders', type: 'nav', label: 'Historial', path: '/orders', icon: <History className="h-4 w-4" /> },
+  { id: 'nav-analytics', type: 'nav', label: 'Analíticas', path: '/analytics', icon: <BarChart3 className="h-4 w-4" /> },
+  { id: 'nav-menu', type: 'nav', label: 'Menú', path: '/menu', icon: <UtensilsCrossed className="h-4 w-4" /> },
 ];
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selected, setSelected] = useState(0);
   const { orders, isLoading } = useOrders();
   const navigate = useNavigate();
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const items = useMemo(() => {
-    const allItems: CommandItem[] = [];
-
-    if (!search) {
-      allItems.push(...NAV_ITEMS);
-    } else {
-      const filteredNav = NAV_ITEMS.filter((item) =>
-        item.label.toLowerCase().includes(search.toLowerCase())
-      );
-      allItems.push(...filteredNav);
-    }
-
-    const orderItems: OrderItem[] = orders
-      .filter((order) => {
-        const matchesId = String(order.id).includes(search);
-        const matchesPhone = order.phone_number.includes(search);
-        return matchesId || matchesPhone;
-      })
-      .slice(0, 6)
-      .map((order) => ({
-        id: `order-${order.id}`,
-        type: 'order' as const,
-        orderId: order.id,
-        phone: order.phone_number,
-        status: order.status,
-        statusLabel: STATUS_META[order.status].label,
-        statusDot: STATUS_META[order.status].dot,
-        total: order.total,
-      }));
-
-    allItems.push(...orderItems);
-    return allItems;
+  const input = useRef<HTMLInputElement>(null);
+  const items = useMemo<CommandItem[]>(() => {
+    const query = search.toLowerCase();
+    const nav = navigation.filter((item) => !query || item.label?.toLowerCase().includes(query));
+    const matching = orders.filter((order) => String(order.id).includes(search) || order.phone_number.includes(search)).slice(0, 6).map((order) => ({ id: `order-${order.id}`, type: 'order' as const, orderId: order.id, phone: order.phone_number, status: order.status, total: order.total }));
+    return [...nav, ...matching];
   }, [search, orders]);
+  const choose = (item: CommandItem) => { if (item.type === 'nav') navigate(item.path!); else navigate(`/orders?order=${item.orderId}`); setOpen(false); };
 
   useEffect(() => {
-    setSelectedIndex(0);
-  }, [search]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        setOpen(true);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const key = (event: KeyboardEvent) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setOpen(true); } };
+    window.addEventListener('keydown', key);
+    return () => window.removeEventListener('keydown', key);
   }, []);
+  useEffect(() => { if (open) { setSelected(0); requestAnimationFrame(() => input.current?.focus()); } }, [open]);
+  useEffect(() => { if (open) setSelected(0); }, [open, search]);
+  useEffect(() => { if (open) document.querySelector<HTMLElement>('[data-command-selected="true"]')?.scrollIntoView({ block: 'nearest' }); }, [open, selected]);
 
-  useEffect(() => {
-    if (open) {
-      inputRef.current?.focus();
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [open]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!open) return;
-
-      switch (e.key) {
-        case 'Escape':
-          setOpen(false);
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          setSelectedIndex((prev) =>
-            prev < items.length - 1 ? prev + 1 : prev
-          );
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (items[selectedIndex]) {
-            const item = items[selectedIndex];
-            if (item.type === 'nav') {
-              navigate(item.path);
-            } else {
-              navigate(`/orders?order=${item.orderId}`);
-            }
-            setOpen(false);
-          }
-          break;
-      }
-    };
-
-    if (open) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [open, items, selectedIndex, navigate]);
-
-  useEffect(() => {
-    const selectedElement = document.querySelector('[data-selected="true"]');
-    if (selectedElement) {
-      selectedElement.scrollIntoView({ block: 'nearest' });
-    }
-  }, [selectedIndex]);
-
-  const handleSelect = (index: number) => {
-    setSelectedIndex(index);
-    const item = items[index];
-    if (item.type === 'nav') {
-      navigate(item.path);
-    } else {
-      navigate(`/orders?order=${item.orderId}`);
-    }
-    setOpen(false);
+  const keydown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') { event.preventDefault(); setOpen(false); }
+    if (event.key === 'ArrowDown') { event.preventDefault(); setSelected((current) => Math.min(current + 1, Math.max(items.length - 1, 0))); }
+    if (event.key === 'ArrowUp') { event.preventDefault(); setSelected((current) => Math.max(current - 1, 0)); }
+    if (event.key === 'Enter' && items[selected]) { event.preventDefault(); choose(items[selected]); }
   };
 
-  if (!open) {
-    return null;
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] bg-black/40 backdrop-blur-sm px-4"
-      onClick={() => setOpen(false)}
-    >
-      <div
-        className="w-full max-w-xl bg-surface border border-border rounded-card shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div className="flex items-center gap-3 border-b border-border px-3 py-3">
-          <Search className="w-5 h-5 text-ink-soft flex-shrink-0" />
-          <input
-            ref={inputRef}
-            type="text"
-            placeholder="Buscar pedido por numero o telefono..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 bg-transparent outline-none text-ink placeholder:text-ink-soft"
-          />
-          <kbd
-            onClick={() => setOpen(false)}
-            className="text-xs text-ink-soft px-2 py-1 rounded border border-border cursor-pointer hover:bg-canvas"
-          >
-            ESC
-          </kbd>
-        </div>
-
-        <div className="max-h-[320px] overflow-y-auto">
-          {isLoading && !items.length ? (
-            <div className="px-3 py-8 text-center text-sm text-ink-soft">
-              Cargando pedidos...
-            </div>
-          ) : items.length === 0 ? (
-            <div className="px-3 py-8 text-center flex flex-col items-center gap-2">
-              <SearchX className="w-5 h-5 text-ink-soft" />
-              <span className="text-sm text-ink-soft">Sin resultados para esa busqueda</span>
-            </div>
-          ) : (
-            <>
-              {NAV_ITEMS.some((item) =>
-                items.find((i) => i.type === 'nav' && i.id === item.id)
-              ) && (
-                <>
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft/60 px-3 py-2">
-                    Navegacion
-                  </div>
-                  {items
-                    .filter((item) => item.type === 'nav')
-                    .map((item) => {
-                      const itemIndex = items.indexOf(item);
-                      return (
-                        <div
-                          key={item.id}
-                          data-selected={itemIndex === selectedIndex}
-                          className={cn(
-                            'min-h-11 px-3 rounded-lg cursor-pointer flex items-center gap-3 mx-2 transition-colors',
-                            itemIndex === selectedIndex
-                              ? 'bg-brand-soft text-brand'
-                              : 'text-ink hover:bg-canvas'
-                          )}
-                          onClick={() => handleSelect(itemIndex)}
-                        >
-                          {(item as NavigationItem).icon}
-                          <span className="text-sm font-medium">
-                            {(item as NavigationItem).label}
-                          </span>
-                        </div>
-                      );
-                    })}
-                </>
-              )}
-
-              {items.some((item) => item.type === 'order') && (
-                <>
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft/60 px-3 py-2">
-                    Pedidos
-                  </div>
-                  {items
-                    .filter((item) => item.type === 'order')
-                    .map((item) => {
-                      const itemIndex = items.indexOf(item);
-                      const orderItem = item as OrderItem;
-                      return (
-                        <div
-                          key={item.id}
-                          data-selected={itemIndex === selectedIndex}
-                          className={cn(
-                            'min-h-11 px-3 rounded-lg cursor-pointer flex items-center gap-3 mx-2 transition-colors',
-                            itemIndex === selectedIndex
-                              ? 'bg-brand-soft text-brand'
-                              : 'text-ink hover:bg-canvas'
-                          )}
-                          onClick={() => handleSelect(itemIndex)}
-                        >
-                          <span className="font-semibold">#{orderItem.orderId}</span>
-                          <span className="text-sm truncate">{formatPhone(orderItem.phone)}</span>
-                          <div className="flex items-center gap-1.5 ml-auto shrink-0">
-                            <div
-                              className={cn('w-2 h-2 rounded-full', orderItem.statusDot)}
-                            />
-                            <span className="text-xs">{orderItem.statusLabel}</span>
-                          </div>
-                          <span className="text-sm font-medium shrink-0 w-16 text-right">
-                            {formatCurrency(orderItem.total)}
-                          </span>
-                        </div>
-                      );
-                    })}
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  return <Dialog.Root open={open} onOpenChange={setOpen}><Dialog.Portal><Dialog.Overlay className="command-overlay fixed inset-0 z-50 bg-black/70" /><Dialog.Content aria-describedby={undefined} className="command-content fixed left-1/2 top-4 z-[51] grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-[28px] border border-border bg-surface-raised text-ink neo-shadow outline-none sm:top-[15vh]"><Dialog.Title className="sr-only">Buscar en el panel</Dialog.Title><div className="flex min-w-0 items-center gap-3 border-b border-border px-4 py-4"><Search className="h-5 w-5 shrink-0 text-yellow" /><input ref={input} value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={keydown} placeholder="Buscar por número o teléfono..." className="min-h-9 min-w-0 flex-1 bg-transparent text-sm font-bold outline-none placeholder:text-ink-soft" /><kbd className="shrink-0 rounded-lg border border-border px-2 py-1 text-[10px] text-ink-soft">ESC</kbd></div><div className="min-h-0 overflow-x-hidden overflow-y-auto p-2 scrollbar-subtle">{isLoading && !items.length ? <p className="p-8 text-center text-sm text-ink-soft">Cargando pedidos...</p> : !items.length ? <div className="flex flex-col items-center gap-2 p-8 text-center text-sm text-ink-soft"><SearchX className="h-5 w-5" />Sin resultados para esta búsqueda</div> : items.map((item, index) => <button key={item.id} data-command-selected={index === selected} onClick={() => choose(item)} className={cn('flex min-h-12 min-w-0 w-full items-center gap-3 rounded-2xl px-3 text-left text-sm font-bold outline-none', index === selected ? 'bg-mint text-ink-dark' : 'text-ink hover:bg-surface')}>{item.type === 'nav' ? <>{item.icon}<span className="min-w-0 truncate">{item.label}</span></> : <><span className="shrink-0 font-display text-xl">#{item.orderId}</span><span className="min-w-0 flex-1 truncate text-xs">{formatPhone(item.phone!)}</span><span className="hidden shrink-0 sm:inline"><span className={cn('mr-1.5 inline-block h-2 w-2 rounded-full', STATUS_META[item.status as keyof typeof STATUS_META].dot)} />{STATUS_META[item.status as keyof typeof STATUS_META].label}</span><span className="shrink-0">{formatCurrency(item.total!)}</span></>}</button>)}</div></Dialog.Content></Dialog.Portal></Dialog.Root>;
 }

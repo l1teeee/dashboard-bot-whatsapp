@@ -1,256 +1,36 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
-import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { Tooltip } from './Tooltip';
 
-export interface NavItemData {
-  id: string;
-  title: string;
-  icon: LucideIcon;
-  to?: string;
-  badge?: number | string;
-  shortcut?: string;
-  onSelect?: () => void;
-  end?: boolean;
-  children?: NavItemData[];
-}
+export interface NavItemData { id:string; title:string; icon:LucideIcon; to?:string; badge?:number|string; shortcut?:string; onSelect?:()=>void; end?:boolean; children?:NavItemData[]; }
+export interface NavGroupData { heading?:string; items:NavItemData[]; }
+export interface SidebarNavProps { groups:NavGroupData[];bottomItems?:NavItemData[];header?:React.ReactNode;isCollapsed?:boolean;className?:string; }
 
-export interface NavGroupData {
-  heading?: string;
-  items: NavItemData[];
-}
-
-export interface SidebarNavProps {
-  groups: NavGroupData[];
-  bottomItems?: NavItemData[];
-  header?: React.ReactNode;
-  isCollapsed?: boolean;
-  className?: string;
-}
-
-const NavItemButton: React.FC<{
-  item: NavItemData;
-  level: number;
-  isCollapsed?: boolean;
-  isExpanded?: boolean;
-  onToggle?: () => void;
-}> = ({ item, level, isCollapsed, isExpanded, onToggle }) => {
+function Item({ item, collapsed }: { item: NavItemData; collapsed?: boolean }) {
   const Icon = item.icon;
-  const hasChildren = item.children && item.children.length > 0;
-  const showBadge = item.badge !== undefined && item.badge !== 0 && item.badge !== '';
-
+  const content = <>
+    <span className="relative z-10 grid h-5 w-5 shrink-0 place-items-center" aria-hidden="true">
+      <Icon className="h-5 w-5" strokeWidth={2.25} />
+      {item.badge !== undefined && <span className={cn('absolute -right-3 -top-3 grid min-w-4 place-items-center rounded-full bg-coral px-1 text-[9px] font-extrabold leading-4 text-ink-dark transition-all duration-300 motion-reduce:transition-none', !collapsed && 'translate-x-2 opacity-0')}>{item.badge}</span>}
+    </span>
+    <span className={cn('min-w-0 flex-1 truncate whitespace-nowrap transition-[max-width,opacity,transform] duration-300 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none', collapsed ? 'max-w-0 -translate-x-2 opacity-0' : 'max-w-36 opacity-100')}>{item.title}</span>
+    {item.badge !== undefined && <span className={cn('ml-auto rounded-full bg-coral px-2 py-0.5 text-[10px] font-extrabold text-ink-dark transition-[max-width,opacity,transform,padding] duration-300 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none', collapsed ? 'max-w-0 translate-x-2 overflow-hidden px-0 opacity-0' : 'max-w-12 opacity-100')}>{item.badge}</span>}
+  </>;
+  const styles = cn(
+    'group relative flex min-h-11 w-full items-center gap-3 overflow-hidden rounded-2xl px-3 text-sm font-bold text-ink-soft transition-[background-color,color,padding,gap] duration-300 ease-[cubic-bezier(.22,1,.36,1)] hover:bg-surface-raised hover:text-ink focus-ring motion-reduce:transition-none',
+    // The icon keeps a dedicated hit-area and a high-contrast colour in the rail.
+    // Labels animate independently, so they cannot clip or cover the icon.
+    collapsed && 'justify-center gap-0 px-0 text-ink hover:text-ink',
+  );
   if (item.to) {
-    return (
-      <NavLink
-        to={item.to}
-        end={item.end}
-        title={isCollapsed ? item.title : undefined}
-        className={({ isActive }) =>
-          cn(
-            'group flex items-center justify-between rounded-lg px-2.5 transition-colors select-none min-h-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
-            isActive
-              ? 'bg-brand-soft text-brand font-semibold'
-              : 'text-ink-soft hover:bg-canvas hover:text-ink',
-            isCollapsed && 'justify-center',
-          )
-        }
-        style={{ paddingLeft: isCollapsed ? undefined : `${level * 12 + 10}px` }}
-      >
-        <div className="flex items-center gap-3">
-          <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
-          {!isCollapsed && <span className="truncate">{item.title}</span>}
-        </div>
-        {!isCollapsed && showBadge && (
-          <span className="text-xs font-medium bg-brand text-surface rounded-full px-2 py-0.5 shrink-0">
-            {item.badge}
-          </span>
-        )}
-        {isCollapsed && showBadge && (
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand" />
-        )}
-        {!isCollapsed && item.shortcut && (
-          <kbd className="hidden group-hover:inline-flex text-xs text-ink-soft font-mono px-2 py-1 rounded-sm bg-canvas">
-            {item.shortcut}
-          </kbd>
-        )}
-      </NavLink>
-    );
+    const nav = <NavLink aria-label={collapsed ? item.title : undefined} to={item.to} end={item.end} className={({ isActive }) => cn(styles, isActive && 'bg-mint text-ink-dark neo-shadow')}>{content}</NavLink>;
+    return collapsed ? <Tooltip content={item.title}>{nav}</Tooltip> : nav;
   }
+  const button = <button type="button" aria-label={collapsed ? item.title : undefined} onClick={item.onSelect} className={cn(styles, 'w-full')}>{content}</button>;
+  return collapsed ? <Tooltip content={item.title}>{button}</Tooltip> : button;
+}
 
-  if (hasChildren && !isCollapsed) {
-    return (
-      <>
-        <button
-          type="button"
-          onClick={onToggle}
-          title={isCollapsed ? item.title : undefined}
-          className={cn(
-            'group flex items-center justify-between rounded-lg px-2.5 transition-colors select-none min-h-10 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
-            'text-ink-soft hover:bg-canvas hover:text-ink',
-          )}
-          style={{ paddingLeft: `${level * 12 + 10}px` }}
-        >
-          <div className="flex items-center gap-3">
-            <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
-            <span className="truncate">{item.title}</span>
-          </div>
-          <ChevronRight
-            className={cn(
-              'w-[18px] h-[18px] shrink-0 transition-transform',
-              isExpanded && 'rotate-90',
-            )}
-            strokeWidth={1.75}
-          />
-        </button>
-        <div
-          className={cn(
-            'grid transition-[grid-template-rows,opacity] duration-300 ease-in-out border-l border-border ml-6',
-            isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0',
-          )}
-        >
-          <div className="overflow-hidden min-h-0">
-            {item.children?.map((child) => (
-              <NavItemButton
-                key={child.id}
-                item={child}
-                level={level + 1}
-                isCollapsed={isCollapsed}
-              />
-            ))}
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  if (hasChildren && isCollapsed) {
-    return (
-      <button
-        type="button"
-        title={item.title}
-        className={cn(
-          'flex items-center justify-center rounded-lg px-2.5 transition-colors select-none min-h-10 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
-          'text-ink-soft hover:bg-canvas hover:text-ink',
-        )}
-      >
-        <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
-        {showBadge && (
-          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand" />
-        )}
-      </button>
-    );
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={item.onSelect}
-      title={isCollapsed ? item.title : undefined}
-      className={cn(
-        'group flex items-center justify-between rounded-lg px-2.5 transition-colors select-none min-h-10 w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand',
-        'text-ink-soft hover:bg-canvas hover:text-ink',
-        isCollapsed && 'justify-center',
-      )}
-      style={{ paddingLeft: isCollapsed ? undefined : `${level * 12 + 10}px` }}
-    >
-      <div className="flex items-center gap-3">
-        <Icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
-        {!isCollapsed && <span className="truncate">{item.title}</span>}
-      </div>
-      {!isCollapsed && showBadge && (
-        <span className="text-xs font-medium bg-brand text-surface rounded-full px-2 py-0.5 shrink-0">
-          {item.badge}
-        </span>
-      )}
-      {isCollapsed && showBadge && (
-        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-brand" />
-      )}
-      {!isCollapsed && item.shortcut && (
-        <kbd className="hidden group-hover:inline-flex text-xs text-ink-soft font-mono px-2 py-1 rounded-sm bg-canvas">
-          {item.shortcut}
-        </kbd>
-      )}
-    </button>
-  );
-};
-
-const NavGroup: React.FC<{
-  group: NavGroupData;
-  isCollapsed?: boolean;
-}> = ({ group, isCollapsed }) => {
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
-
-  const toggleItem = (itemId: string) => {
-    setExpandedItems((prev) => ({
-      ...prev,
-      [itemId]: !prev[itemId],
-    }));
-  };
-
-  return (
-    <div className="space-y-1">
-      {group.heading && !isCollapsed && (
-        <div className="text-[11px] font-semibold tracking-wider uppercase text-ink-soft/60 px-2.5 py-2">
-          {group.heading}
-        </div>
-      )}
-      {group.items.map((item) => (
-        <div key={item.id} className="relative">
-          <NavItemButton
-            item={item}
-            level={0}
-            isCollapsed={isCollapsed}
-            isExpanded={expandedItems[item.id]}
-            onToggle={() => toggleItem(item.id)}
-          />
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(
-  ({ groups, bottomItems, header, isCollapsed, className }, ref) => {
-    return (
-      <nav
-        ref={ref}
-        className={cn(
-          'flex flex-col h-full bg-surface border-r border-border p-3 transition-[width] duration-300 ease-in-out',
-          isCollapsed ? 'w-16' : 'w-60',
-          className,
-        )}
-      >
-        {header && (
-          <div className={cn('mb-4', isCollapsed && 'hidden')}>
-            {header}
-          </div>
-        )}
-
-        <div className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] space-y-2">
-          {groups.map((group, index) => (
-            <div key={index}>
-              <NavGroup group={group} isCollapsed={isCollapsed} />
-            </div>
-          ))}
-        </div>
-
-        {bottomItems && bottomItems.length > 0 && (
-          <div className="mt-auto pt-3 border-t border-border space-y-1">
-            {bottomItems.map((item) => (
-              <div key={item.id} className="relative">
-                <NavItemButton
-                  item={item}
-                  level={0}
-                  isCollapsed={isCollapsed}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-      </nav>
-    );
-  },
-);
-
+export const SidebarNav = React.forwardRef<HTMLDivElement, SidebarNavProps>(({ groups, bottomItems, header, isCollapsed, className }, ref) => <nav ref={ref} data-collapsed={isCollapsed || undefined} className={cn('flex h-full w-full flex-col overflow-hidden bg-shell p-3', className)}><div className="mb-6 flex h-11 min-h-11 items-center overflow-hidden"><div className={cn('shrink-0 transition-transform duration-300 ease-[cubic-bezier(.22,1,.36,1)] motion-reduce:transition-none', isCollapsed && 'translate-x-1')}>{header}</div></div><div className="flex-1 space-y-5 overflow-x-hidden overflow-y-auto">{groups.map((group, i) => <div key={i}><p className={cn('kicker mb-2 whitespace-nowrap px-3 text-ink-soft transition-[max-height,opacity,margin] duration-300 motion-reduce:transition-none', isCollapsed ? 'max-h-0 overflow-hidden opacity-0' : 'max-h-6 opacity-100')}>{group.heading}</p><div className="space-y-1">{group.items.map((item) => <Item key={item.id} item={item} collapsed={isCollapsed} />)}</div></div>)}</div>{bottomItems && <div className="border-t border-border pt-3">{bottomItems.map((item) => <Item key={item.id} item={item} collapsed={isCollapsed} />)}</div>}</nav>);
 SidebarNav.displayName = 'SidebarNav';

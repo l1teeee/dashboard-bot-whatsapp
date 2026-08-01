@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import {
   Modal,
   Button,
@@ -44,6 +44,8 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
+  const nameRef = useRef<HTMLInputElement>(null);
+  const priceRef = useRef<HTMLInputElement>(null);
 
   const suggestedCategories = useMemo(() => {
     const categories = menuItems
@@ -90,6 +92,11 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
     }
 
     setErrors(newErrors);
+    if (newErrors.name) {
+      requestAnimationFrame(() => nameRef.current?.focus());
+    } else if (newErrors.price) {
+      requestAnimationFrame(() => priceRef.current?.focus());
+    }
     return Object.keys(newErrors).length === 0;
   };
 
@@ -109,16 +116,19 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
       ...(formData.category.trim() && { category: formData.category.trim() }),
     };
 
-    if (isEditing && item) {
-      await updateMutation.mutateAsync({
-        id: item.id,
-        input: input as UpdateMenuItemInput,
-      });
-    } else {
-      await createMutation.mutateAsync(input as CreateMenuItemInput);
+    try {
+      if (isEditing && item) {
+        await updateMutation.mutateAsync({
+          id: item.id,
+          input: input as UpdateMenuItemInput,
+        });
+      } else {
+        await createMutation.mutateAsync(input as CreateMenuItemInput);
+      }
+      onClose();
+    } catch {
+      // La mutación ya presenta el error mediante toast; el formulario permanece abierto.
     }
-
-    onClose();
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
@@ -130,11 +140,12 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
       title={isEditing ? 'Editar item' : 'Nuevo item del menu'}
       size="lg"
       footer={
-        <div className="flex gap-2 justify-end">
-          <Button variant="secondary" onClick={onClose} disabled={isLoading}>
+        <div className="grid grid-cols-1 gap-2 sm:flex sm:justify-end">
+          <Button className="w-full sm:w-auto" variant="secondary" onClick={onClose} disabled={isLoading}>
             Cancelar
           </Button>
           <Button
+            className="w-full sm:w-auto"
             variant="primary"
             onClick={handleSubmit}
             isLoading={isLoading}
@@ -146,6 +157,7 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
     >
       <div className="space-y-4">
         <Input
+          ref={nameRef}
           label="Nombre"
           value={formData.name}
           onChange={(e) => {
@@ -167,6 +179,7 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
         />
 
         <Input
+          ref={priceRef}
           label="Precio"
           type="number"
           step="0.01"
@@ -182,7 +195,7 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
         />
 
         <div>
-          <label className="text-sm font-medium text-ink block mb-2">Categoria</label>
+          <label className="text-sm font-bold text-ink block mb-2">Categoría</label>
           <div className="relative">
             <input
               type="text"
@@ -191,7 +204,7 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               placeholder="Selecciona o escribe una categoria"
               disabled={isLoading}
-              className="h-10 rounded-lg border border-border bg-surface px-3 text-ink w-full focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
+              className="min-h-11 rounded-2xl border border-border bg-surface-raised px-4 text-ink w-full focus-ring"
             />
             <datalist id="categories">
               {suggestedCategories.map((cat) => (
@@ -203,7 +216,7 @@ export function MenuItemForm({ open, item, onClose }: MenuItemFormProps) {
 
         <Toggle
           checked={formData.available}
-          onChange={(e) => setFormData({ ...formData, available: e.currentTarget.checked })}
+          onCheckedChange={(available) => setFormData({ ...formData, available })}
           label="Disponible"
           disabled={isLoading}
         />

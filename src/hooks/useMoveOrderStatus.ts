@@ -35,7 +35,7 @@ export function useMoveOrderStatus() {
       return { previous };
     },
 
-    onError: (error, _vars, context) => {
+    onError: (error, vars, context) => {
       if (context?.previous) {
         queryClient.setQueryData(listKey, context.previous);
       }
@@ -53,13 +53,16 @@ export function useMoveOrderStatus() {
       }
 
       toast.error(message);
+      queryClient.invalidateQueries({ queryKey: queryKeys.order(vars.id) });
     },
 
-    onSettled: () => {
+    onSettled: (_data, _error, vars) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.order(vars.id) });
     },
 
     onSuccess: (_data, vars) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.order(vars.id) });
       const label = STATUS_META[vars.status].label;
       toast.success(`Pedido #${vars.id}: ${label}`);
     },

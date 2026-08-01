@@ -1,90 +1,35 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { PanelLeftClose, PanelLeftOpen, Search } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Search, MoreHorizontal, LogOut } from 'lucide-react';
 import { useConnectionStore } from '@/store/connection';
 import { useAuthStore } from '@/store/auth';
 import { useSidebarStore } from '@/store/sidebar';
+import { useMenuOverlayStore } from '@/store/menuOverlay';
 import { queryClient } from '@/api/queryClient';
-import { Button } from '@/components/ui';
+import { DropdownMenu, DropdownMenuItem, IconButton } from '@/components/ui';
 import { cn } from '@/lib/cn';
 
-const SECTION_TITLES: Record<string, string> = {
-  '/': 'Pedidos en curso',
-  '/orders': 'Todos los pedidos',
-  '/menu': 'Menu',
+const titles: Record<string, { crumb: string; title: string }> = {
+  '/': { crumb: 'Pedidos', title: 'En vivo' },
+  '/orders': { crumb: 'Registro', title: 'Historial' },
+  '/analytics': { crumb: 'Analíticas', title: 'Resumen operativo' },
+  '/menu': { crumb: 'Catálogo', title: 'Menú' },
 };
 
 export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
-  const isOffline = useConnectionStore((s) => s.isOffline);
-  const clearApiKey = useAuthStore((s) => s.clearApiKey);
-  const isCollapsed = useSidebarStore((s) => s.isCollapsed);
-  const toggle = useSidebarStore((s) => s.toggle);
-
-  const sectionTitle = SECTION_TITLES[location.pathname] || 'Panel de pedidos';
-
-  function handleLogout() {
+  const offline = useConnectionStore((state) => state.isOffline);
+  const collapsed = useSidebarStore((state) => state.isCollapsed);
+  const toggle = useSidebarStore((state) => state.toggle);
+  const clearApiKey = useAuthStore((state) => state.clearApiKey);
+  const resetMenuOverlay = useMenuOverlayStore((state) => state.reset);
+  const section = titles[location.pathname] || titles['/'];
+  const logout = () => {
     clearApiKey();
+    resetMenuOverlay();
     queryClient.clear();
     navigate('/login', { replace: true });
-  }
-
-  function openCommandPalette() {
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
-  }
-
-  return (
-    <header className="sticky top-0 z-40 bg-surface border-b border-border">
-      <div className="px-4 lg:px-6 py-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          <button
-            onClick={toggle}
-            className="hidden lg:inline-flex p-2 rounded-lg text-ink-soft hover:bg-canvas hover:text-ink transition-colors"
-            aria-label={isCollapsed ? 'Expandir menu' : 'Colapsar menu'}
-          >
-            {isCollapsed ? (
-              <PanelLeftOpen className="w-5 h-5" strokeWidth={1.75} />
-            ) : (
-              <PanelLeftClose className="w-5 h-5" strokeWidth={1.75} />
-            )}
-          </button>
-          <h1 className="text-lg font-semibold text-ink truncate">{sectionTitle}</h1>
-        </div>
-
-        <div className="flex items-center gap-4 flex-shrink-0">
-          <button
-            onClick={openCommandPalette}
-            className="hidden md:flex items-center gap-2 h-9 px-3 rounded-lg border border-border bg-canvas text-ink-soft hover:bg-surface transition-colors"
-            aria-label="Buscar pedido"
-          >
-            <Search className="w-4 h-4" strokeWidth={1.75} />
-            <span className="text-sm">Buscar pedido...</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-border bg-surface">
-              Ctrl K
-            </kbd>
-          </button>
-
-          <div className="flex items-center gap-2">
-            <div
-              className={cn(
-                'w-2 h-2 rounded-full',
-                isOffline ? 'bg-cancelled' : 'bg-completed'
-              )}
-            />
-            <span className="text-sm text-ink-soft">
-              {isOffline ? 'Sin conexion' : 'Conectado'}
-            </span>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-          >
-            Cerrar sesion
-          </Button>
-        </div>
-      </div>
-    </header>
-  );
+  };
+  const openSearch = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
+  return <header className="flex min-h-[76px] items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6"><div className="flex min-w-0 items-center gap-3"><IconButton className="hidden lg:grid" onClick={toggle} aria-label={collapsed ? 'Expandir menú' : 'Colapsar menú'}>{collapsed ? <PanelLeftOpen className="h-5 w-5"/> : <PanelLeftClose className="h-5 w-5"/>}</IconButton><div><p className="kicker text-ink-soft">{section.crumb}</p><h2 className="font-display text-2xl font-bold uppercase leading-none">{section.title}</h2></div></div><div className="flex items-center gap-2"><button onClick={openSearch} className="focus-ring flex min-h-11 items-center gap-2 rounded-full border border-border bg-surface px-3 text-sm font-bold text-ink hover:bg-surface-raised"><Search className="h-4 w-4"/><span className="hidden md:inline">Buscar</span><kbd className="hidden rounded bg-shell px-1.5 py-0.5 text-[10px] text-ink-soft lg:inline">⌘K</kbd></button><div className={cn('hidden items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-bold sm:flex', offline ? 'text-coral' : 'text-mint')}><span className={cn('h-2 w-2 rounded-full', offline ? 'bg-coral' : 'bg-mint')}/>{offline ? 'Sin conexión' : 'En línea'}</div><DropdownMenu trigger={<IconButton aria-label="Opciones"><MoreHorizontal className="h-5 w-5"/></IconButton>}><DropdownMenuItem onSelect={logout}><LogOut className="mr-2 h-4 w-4"/>Cerrar sesión</DropdownMenuItem></DropdownMenu></div></header>;
 }

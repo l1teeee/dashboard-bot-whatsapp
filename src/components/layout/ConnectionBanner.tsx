@@ -1,18 +1,2 @@
-import { useConnectionStore } from '@/store/connection';
-
-export function ConnectionBanner() {
-  const isOffline = useConnectionStore((s) => s.isOffline);
-
-  if (!isOffline) {
-    return null;
-  }
-
-  return (
-    <div
-      className="bg-cancelled-soft text-cancelled border-b border-cancelled/20 px-4 py-2 text-sm font-medium"
-      role="status"
-    >
-      Sin conexion al servidor. Reintentando automaticamente.
-    </div>
-  );
-}
+import { WifiOff } from 'lucide-react'; import { useConnectionStore } from '@/store/connection';
+export function ConnectionBanner(){const offline=useConnectionStore(s=>s.isOffline);if(!offline)return null;return <div role="status" aria-live="polite" className="flex items-center gap-2 border-b border-ink-dark bg-coral px-5 py-3 text-sm font-bold text-ink-dark"><WifiOff className="h-4 w-4"/>Sin conexión con el servidor. Reintentando automáticamente.</div>;}

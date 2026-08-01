@@ -1,0 +1,2 @@
+import React from 'react'; import { cn } from '@/lib/cn';
+export const IconButton = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(({ className, ...props }, ref) => <button ref={ref} className={cn('grid h-11 w-11 place-items-center rounded-full border border-border bg-surface-raised text-ink transition-transform hover:-translate-y-0.5 focus-ring disabled:opacity-50', className)} {...props}/>); IconButton.displayName = 'IconButton';

@@ -1,39 +1,10 @@
-﻿import React from 'react';
+import { useId } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
+import { Select as SelectPrimitive } from 'radix-ui';
 import { cn } from '@/lib/cn';
-
-interface SelectOption {
-  value: string;
-  label: string;
+interface SelectOption { value: string; label: string; }
+interface SelectProps { label?: string; error?: string; options: SelectOption[]; value: string; onValueChange: (value: string) => void; placeholder?: string; disabled?: boolean; className?: string; }
+export function Select({ className, label, error, options, value, onValueChange, placeholder = 'Seleccionar', disabled }: SelectProps) {
+  const id = useId();
+  return <div className="space-y-1.5">{label && <label className="block text-sm font-bold text-inherit">{label}</label>}<SelectPrimitive.Root value={value} onValueChange={onValueChange} disabled={disabled}><SelectPrimitive.Trigger aria-label={label || placeholder} className={cn('flex min-h-11 w-full items-center justify-between rounded-2xl border border-border bg-surface-raised px-4 text-left text-ink focus-ring data-[placeholder]:text-ink-soft', error && 'border-coral', className)}><SelectPrimitive.Value placeholder={placeholder}/><SelectPrimitive.Icon><ChevronDown className="h-4 w-4"/></SelectPrimitive.Icon></SelectPrimitive.Trigger><SelectPrimitive.Portal><SelectPrimitive.Content position="popper" sideOffset={6} className="z-[70] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-border bg-surface-raised p-1 text-ink neo-shadow"><SelectPrimitive.Viewport>{options.map((option) => <SelectPrimitive.Item key={option.value} value={option.value} className="relative flex min-h-10 cursor-default select-none items-center rounded-xl py-2 pl-8 pr-3 text-sm font-bold outline-none data-[highlighted]:bg-mint data-[highlighted]:text-ink-dark"><SelectPrimitive.ItemIndicator className="absolute left-2"><Check className="h-4 w-4"/></SelectPrimitive.ItemIndicator><SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText></SelectPrimitive.Item>)}</SelectPrimitive.Viewport></SelectPrimitive.Content></SelectPrimitive.Portal></SelectPrimitive.Root>{error && <p id={`${id}-error`} className="text-sm text-coral">{error}</p>}</div>;
 }
-
-interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'children'> {
-  label?: string;
-  error?: string;
-  options: SelectOption[];
-}
-
-export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error, options, ...props }, ref) => (
-    <div className="space-y-1">
-      {label && <label className="block text-sm font-medium text-ink">{label}</label>}
-      <select
-        ref={ref}
-        className={cn(
-          'w-full px-3 py-2 border border-border rounded-card bg-surface text-ink focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2',
-          error && 'border-cancelled',
-          className,
-        )}
-        {...props}
-      >
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      {error && <p className="text-sm text-cancelled">{error}</p>}
-    </div>
-  ),
-);
-
-Select.displayName = 'Select';

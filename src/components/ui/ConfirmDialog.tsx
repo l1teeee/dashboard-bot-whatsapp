@@ -28,11 +28,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onClose={onCancel}
     title={title}
     footer={
-      <div className="flex gap-2 justify-end">
-        <Button variant="ghost" onClick={onCancel} disabled={isLoading}>
+      <div className="grid grid-cols-1 gap-2 sm:flex sm:justify-end">
+        <Button className="w-full sm:w-auto" variant="ghost" onClick={onCancel} disabled={isLoading}>
           Cancelar
         </Button>
         <Button
+          className="w-full sm:w-auto"
           variant={tone === 'danger' ? 'danger' : 'primary'}
           onClick={onConfirm}
           isLoading={isLoading}

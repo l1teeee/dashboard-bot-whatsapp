@@ -26,6 +26,9 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
   const { mutate: reorder } = useReorderOrder();
   const { mutate: deleteOrder } = useDeleteOrder();
   const [pendingMove, setPendingMove] = useState<PendingMove | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Order | null>(null);
+  const [isMoveConfirmOpen, setMoveConfirmOpen] = useState(false);
+  const [isDeleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const columns = STATUS_ORDER.map((status) => ({
     id: status,
@@ -39,6 +42,7 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
 
     if (target === 'cancelled') {
       setPendingMove({ order, target });
+      setMoveConfirmOpen(true);
       return;
     }
 
@@ -50,14 +54,15 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
   };
 
   const handleDeleteDrop = (order: Order) => {
-    deleteOrder({ id: order.id });
+    setPendingDelete(order);
+    setDeleteConfirmOpen(true);
   };
 
   const handleConfirmCancel = () => {
     if (pendingMove) {
       moveStatus({ id: pendingMove.order.id, status: pendingMove.target });
     }
-    setPendingMove(null);
+    setMoveConfirmOpen(false);
   };
 
   return (
@@ -67,9 +72,14 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
         items={orders}
         getItemId={(o) => String(o.id)}
         getItemColumn={(o) => o.status}
-        renderItem={(order) => (
-          <OrderCard order={order} onClick={onSelectOrder} />
-        )}
+        getItemPosition={(o) => o.position}
+        renderItem={(order) => {
+          const columnOrders = orders
+            .filter((item) => item.status === order.status)
+            .sort((a, b) => a.position - b.position || a.id - b.id);
+          const index = columnOrders.findIndex((item) => item.id === order.id);
+          return <OrderCard order={order} onClick={onSelectOrder} onDelete={() => handleDeleteDrop(order)} onMoveUp={index > 0 ? () => reorder({ id: order.id, position: index - 1, status: order.status }) : undefined} onMoveDown={index >= 0 && index < columnOrders.length - 1 ? () => reorder({ id: order.id, position: index + 1, status: order.status }) : undefined} />;
+        }}
         isDraggable={(o) => ORDER_STATUS_TRANSITIONS[o.status].length > 0}
         canDrop={(o, columnId) =>
           (ORDER_STATUS_TRANSITIONS[o.status] as string[]).includes(columnId)
@@ -80,17 +90,26 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
         renderEmpty={() => <EmptyState title="Sin pedidos" />}
         renderSkeleton={() => <SkeletonCard />}
         isLoading={isLoading}
-        deleteZoneLabel="Soltar aqui para archivar el pedido"
+        deleteZoneLabel="Eliminar pedido"
       />
 
       <ConfirmDialog
-        open={pendingMove !== null}
+        open={isMoveConfirmOpen}
         title="Cancelar pedido"
-        description={`El pedido #${pendingMove?.order.id} sera cancelado. Esta accion no se puede deshacer.`}
+        description={pendingMove ? `El pedido #${pendingMove.order.id} sera cancelado. Esta accion no se puede deshacer.` : 'Confirma la cancelación del pedido.'}
         confirmLabel="Cancelar pedido"
         tone="danger"
         onConfirm={handleConfirmCancel}
-        onCancel={() => setPendingMove(null)}
+        onCancel={() => setMoveConfirmOpen(false)}
+      />
+      <ConfirmDialog
+        open={isDeleteConfirmOpen}
+        title="Eliminar pedido"
+        description={pendingDelete ? `El pedido #${pendingDelete.id} se eliminara de forma permanente.` : 'Confirma la eliminación del pedido.'}
+        confirmLabel="Eliminar pedido"
+        tone="danger"
+        onConfirm={() => { if (pendingDelete) deleteOrder({ id: pendingDelete.id }); setDeleteConfirmOpen(false); }}
+        onCancel={() => setDeleteConfirmOpen(false)}
       />
     </>
   );

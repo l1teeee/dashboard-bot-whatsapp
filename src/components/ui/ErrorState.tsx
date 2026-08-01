@@ -1,18 +1,2 @@
-﻿import React from 'react';
-import { Button } from './Button';
-
-interface ErrorStateProps {
-  title?: string;
-  message: string;
-  onRetry?: () => void;
-}
-
-export const ErrorState: React.FC<ErrorStateProps> = ({ title = 'Error', message, onRetry }) => (
-  <div className="flex flex-col items-center justify-center py-12 text-center">
-    <h3 className="text-lg font-semibold text-cancelled mb-2">{title}</h3>
-    <p className="text-sm text-ink-soft mb-4">{message}</p>
-    {onRetry && <Button variant="secondary" onClick={onRetry}>Reintentar</Button>}
-  </div>
-);
-
-ErrorState.displayName = 'ErrorState';
+import React from 'react'; import { TriangleAlert } from 'lucide-react'; import { Button } from './Button';
+export const ErrorState: React.FC<{title?:string;message:string;onRetry?:()=>void}> = ({title='No pudimos cargar esto',message,onRetry}) => <div className="flex flex-col items-center justify-center rounded-[24px] border border-ink-dark bg-coral p-8 text-center text-ink-dark neo-shadow"><TriangleAlert className="mb-3 h-8 w-8"/><h3 className="font-display text-2xl font-bold uppercase">{title}</h3><p className="mt-2 max-w-md text-sm">{message}</p>{onRetry && <Button className="mt-4" variant="dark" onClick={onRetry}>Reintentar</Button>}</div>; ErrorState.displayName = 'ErrorState';

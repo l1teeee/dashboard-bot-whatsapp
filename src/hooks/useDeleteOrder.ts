@@ -1,55 +1,50 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteOrder } from '@/api/orders';
 import { queryKeys } from '@/lib/queryKeys';
-import type { PaginatedOrders } from '@/types/order';
+import type { OrderWithLogs, PaginatedOrders } from '@/types/order';
 import { ApiError, NetworkError } from '@/types/api';
 import toast from 'react-hot-toast';
 
-interface DeleteOrderParams {
-  id: number;
-}
+interface DeleteOrderParams { id: number; }
 
 export function useDeleteOrder() {
   const queryClient = useQueryClient();
   const listKey = queryKeys.orders({ limit: 100 });
-
   return useMutation({
-    mutationFn: ({ id }: DeleteOrderParams) =>
-      deleteOrder(id),
-
+    mutationFn: ({ id }: DeleteOrderParams) => deleteOrder(id),
     onMutate: async ({ id }) => {
-      await queryClient.cancelQueries({ queryKey: listKey });
+      const detailKey = queryKeys.order(id);
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: listKey }),
+        queryClient.cancelQueries({ queryKey: detailKey }),
+      ]);
       const previous = queryClient.getQueryData<PaginatedOrders>(listKey);
-
+      const previousDetail = queryClient.getQueryData<OrderWithLogs>(detailKey);
       if (previous) {
         queryClient.setQueryData<PaginatedOrders>(listKey, {
           ...previous,
-          orders: previous.orders.filter((o) => o.id !== id),
-          total: previous.total - 1,
+          orders: previous.orders.filter((order) => order.id !== id),
+          total: Math.max(0, previous.total - 1),
         });
       }
-
-      return { previous };
+      queryClient.removeQueries({ queryKey: detailKey, exact: true });
+      return { previous, previousDetail };
     },
-
-    onError: (error, _vars, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(listKey, context.previous);
-      }
-
-      let message = 'Error al eliminar el pedido';
-
-      if (error instanceof ApiError) {
-        message = error.message;
-      } else if (error instanceof NetworkError) {
-        message = 'Sin conexion con el servidor';
-      }
-
+    onError: (error, vars, context) => {
+      const detailKey = queryKeys.order(vars.id);
+      if (context?.previous) queryClient.setQueryData(listKey, context.previous);
+      if (context?.previousDetail) queryClient.setQueryData(detailKey, context.previousDetail);
+      const message = error instanceof ApiError ? error.message : error instanceof NetworkError ? 'Sin conexion con el servidor' : 'Error al eliminar el pedido';
       toast.error(message);
+      queryClient.invalidateQueries({ queryKey: detailKey });
     },
-
-    onSettled: () => {
+    onSuccess: (_data, vars) => {
+      queryClient.removeQueries({ queryKey: queryKeys.order(vars.id), exact: true });
+      toast.success(`Pedido #${vars.id} eliminado`);
+    },
+    onSettled: (_data, _error, vars) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.order(vars.id) });
     },
   });
 }

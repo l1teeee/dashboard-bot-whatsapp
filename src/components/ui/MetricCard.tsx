@@ -1,0 +1,2 @@
+import { cn } from '@/lib/cn';
+export function MetricCard({label,value,detail,className}:{label:string;value:string;detail?:string;className?:string}) { return <div className={cn('rounded-[24px] border border-ink-dark p-5 text-ink-dark neo-shadow',className)}><p className="kicker opacity-70">{label}</p><p className="font-display mt-2 text-4xl font-bold leading-none">{value}</p>{detail && <p className="mt-3 text-xs font-semibold opacity-70">{detail}</p>}</div>; }

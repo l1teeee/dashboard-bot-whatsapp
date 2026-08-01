@@ -1,68 +1,22 @@
-import { Card, CardBody } from '@/components/ui';
+import { ArrowUpRight, ChevronDown, ChevronUp, Trash2 } from 'lucide-react';
+import { Card, CardBody, IconButton, Button } from '@/components/ui';
 import { StatusBadge } from './StatusBadge';
 import { StatusChangeButton } from './StatusChangeButton';
-import { STATUS_META } from '@/lib/orderStatus';
 import { ORDER_STATUS_TRANSITIONS } from '@/types/order';
-import { formatCurrency, formatRelativeTime, formatPhone } from '@/lib/format';
+import { formatCurrency, formatDateTime, formatPhone, formatRelativeTime } from '@/lib/format';
+import { cn } from '@/lib/cn';
 import type { Order } from '@/types/order';
 
-interface OrderCardProps {
-  order: Order;
-  onClick: (id: number) => void;
-}
+interface Props { order: Order; onClick: (id: number) => void; variant?: 'kanban' | 'list' | 'compact'; onMoveUp?: () => void; onMoveDown?: () => void; onDelete?: () => void; }
 
-export function OrderCard({ order, onClick }: OrderCardProps) {
-  const column = STATUS_META[order.status].column;
+export function OrderCard({ order, onClick, variant = 'kanban', onMoveUp, onMoveDown, onDelete }: Props) {
   const transitions = ORDER_STATUS_TRANSITIONS[order.status];
-  const isTerminal = transitions.length === 0;
+  const items = order.items.slice(0, 3).map((item) => `${item.quantity}× ${item.name}`).join(' · ') + (order.items.length > 3 ? ` · +${order.items.length - 3}` : '');
+  const detailLabel = `Ver detalle del pedido ${order.id}`;
 
-  const itemsDisplay = order.items.slice(0, 3).map((item) => `${item.quantity}x ${item.name}`);
-  if (order.items.length > 3) {
-    itemsDisplay.push(`+${order.items.length - 3} mas`);
-  }
+  if (variant === 'compact') return <button onClick={() => onClick(order.id)} className="focus-ring flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left hover:bg-surface-raised" aria-label={detailLabel}><span className="font-display text-xl font-bold">#{order.id}</span><span className="min-w-0 flex-1 truncate text-xs text-ink-soft">{formatPhone(order.phone_number)}</span><StatusBadge status={order.status} size="sm"/><span className="text-sm font-bold">{formatCurrency(order.total)}</span></button>;
 
-  return (
-    <Card
-      interactive
-      accent={column}
-      className="cursor-pointer"
-      onClick={() => onClick(order.id)}
-    >
-      <CardBody className="space-y-3">
-        <div className="flex items-start justify-between gap-2">
-          <h3 className="text-xl font-bold text-ink">#{order.id}</h3>
-          <StatusBadge status={order.status} size="sm" />
-        </div>
+  if (variant === 'list') return <Card className="border-border bg-surface-raised"><CardBody className="grid gap-3 p-4 md:grid-cols-[100px_1fr_160px_130px_46px] md:items-center"><div className="flex items-center gap-2"><span className="font-display text-3xl font-bold">#{order.id}</span><StatusBadge status={order.status} size="sm"/></div><div className="min-w-0"><p className="font-bold">{formatPhone(order.phone_number)}</p><p className="mt-1 truncate text-xs text-ink-soft">{items || 'Sin items'}</p></div><p className="text-xs text-ink-soft">{formatDateTime(order.created_at)}</p><p className="font-display text-2xl font-bold">{formatCurrency(order.total)}</p><IconButton aria-label={detailLabel} onClick={() => onClick(order.id)}><ArrowUpRight className="h-4 w-4"/></IconButton><div className="col-span-full grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 md:hidden">{transitions.map((target) => <StatusChangeButton key={target} orderId={order.id} target={target} size="sm" fullWidth/>)}</div></CardBody></Card>;
 
-        <p className="text-sm text-ink-soft">{formatPhone(order.phone_number)}</p>
-
-        <div className="space-y-1">
-          {itemsDisplay.map((item, i) => (
-            <p key={i} className="text-sm text-ink-soft">
-              {item}
-            </p>
-          ))}
-        </div>
-
-        <div className="flex items-baseline justify-between pt-2 border-t border-border">
-          <p className="text-lg font-semibold text-ink">{formatCurrency(order.total)}</p>
-          <p className="text-sm text-ink-soft">{formatRelativeTime(order.created_at)}</p>
-        </div>
-
-        {!isTerminal && (
-          <div className="flex gap-2 pt-2">
-            {transitions.map((target) => (
-              <StatusChangeButton
-                key={target}
-                orderId={order.id}
-                target={target}
-                size="sm"
-                fullWidth
-              />
-            ))}
-          </div>
-        )}
-      </CardBody>
-    </Card>
-  );
+  return <Card className="relative border-border bg-surface-raised"><CardBody className="space-y-3 p-4"><div className="flex items-start justify-between gap-2 pr-7"><div><h3 className="font-display text-3xl font-bold leading-none">#{order.id}</h3><p className="mt-1 text-xs font-semibold text-ink-soft">{formatPhone(order.phone_number)}</p></div><StatusBadge status={order.status} size="sm"/></div><p className="line-clamp-2 min-h-8 text-xs text-ink-soft">{items || 'Sin items'}</p><div className="flex items-end justify-between border-t border-border pt-3"><p className="font-display text-2xl font-bold">{formatCurrency(order.total)}</p><p className="text-[11px] font-bold text-ink-soft">{formatRelativeTime(order.created_at)}</p></div><Button variant="ghost" size="sm" fullWidth onClick={() => onClick(order.id)} aria-label={detailLabel}>Ver detalle<ArrowUpRight className="h-3.5 w-3.5"/></Button>{(onMoveUp || onMoveDown) && <div className="flex gap-1 border-t border-border pt-2"><button onClick={onMoveUp} disabled={!onMoveUp} className="focus-ring flex min-h-9 flex-1 items-center justify-center rounded-xl text-xs font-bold hover:bg-surface disabled:opacity-40"><ChevronUp className="h-4 w-4"/>Subir</button><button onClick={onMoveDown} disabled={!onMoveDown} className="focus-ring flex min-h-9 flex-1 items-center justify-center rounded-xl text-xs font-bold hover:bg-surface disabled:opacity-40"><ChevronDown className="h-4 w-4"/>Bajar</button></div>}{transitions.length > 0 && <div className={cn('flex gap-2 pt-1', transitions.length > 1 && 'flex-wrap')}>{transitions.map((target) => <StatusChangeButton key={target} orderId={order.id} target={target} size="sm" fullWidth/>)}</div>}{onDelete && <Button variant="danger" size="sm" fullWidth onClick={onDelete}><Trash2 className="h-3.5 w-3.5"/>Eliminar pedido</Button>}</CardBody></Card>;
 }

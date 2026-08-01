@@ -6,6 +6,9 @@ export const STATUS_META: Record<OrderStatus, {
   dot: string;
   badge: string;
   column: string;
+  surface: string;
+  text: string;
+  border: string;
 }> = {
   pending: {
     label: 'Pendiente',
@@ -13,6 +16,9 @@ export const STATUS_META: Record<OrderStatus, {
     dot: 'bg-pending',
     badge: 'bg-pending-soft text-pending',
     column: 'border-t-pending',
+    surface: 'bg-yellow',
+    text: 'text-ink-dark',
+    border: 'border-yellow',
   },
   processing: {
     label: 'En proceso',
@@ -20,6 +26,9 @@ export const STATUS_META: Record<OrderStatus, {
     dot: 'bg-processing',
     badge: 'bg-processing-soft text-processing',
     column: 'border-t-processing',
+    surface: 'bg-lilac',
+    text: 'text-ink-dark',
+    border: 'border-lilac',
   },
   completed: {
     label: 'Completado',
@@ -27,6 +36,9 @@ export const STATUS_META: Record<OrderStatus, {
     dot: 'bg-completed',
     badge: 'bg-completed-soft text-completed',
     column: 'border-t-completed',
+    surface: 'bg-mint',
+    text: 'text-ink-dark',
+    border: 'border-mint',
   },
   cancelled: {
     label: 'Cancelado',
@@ -34,6 +46,9 @@ export const STATUS_META: Record<OrderStatus, {
     dot: 'bg-cancelled',
     badge: 'bg-cancelled-soft text-cancelled',
     column: 'border-t-cancelled',
+    surface: 'bg-coral',
+    text: 'text-ink-dark',
+    border: 'border-coral',
   },
 };
 

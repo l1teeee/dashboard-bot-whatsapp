@@ -6,79 +6,63 @@ import { useMenuOverlayStore } from '@/store/menuOverlay';
 import { ApiError, NetworkError } from '@/types/api';
 import type { MenuItem, CreateMenuItemInput, UpdateMenuItemInput } from '@/types/menu';
 
+function syncOverlay(item: MenuItem) {
+  const { remember, forget } = useMenuOverlayStore.getState();
+  if (item.available) forget(item.id);
+  else remember({ ...item, available: false });
+}
+
 export function useCreateMenuItem() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (input: CreateMenuItemInput) => createMenuItem(input),
-    onSuccess: () => {
+    mutationFn: (input: CreateMenuItemInput) => createMenuItem(input),
+    onSuccess: (item) => {
+      syncOverlay(item);
       queryClient.invalidateQueries({ queryKey: queryKeys.menu() });
       toast.success('Item creado exitosamente');
     },
-    onError: (error: Error) => {
-      const message = getErrorMessage(error);
-      toast.error(message);
-    },
+    onError: (error: Error) => toast.error(getErrorMessage(error)),
   });
 }
 
 export function useUpdateMenuItem() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async ({ id, input }: { id: number; input: UpdateMenuItemInput }) =>
-      updateMenuItem(id, input),
-    onSuccess: () => {
+    mutationFn: ({ id, input }: { id: number; input: UpdateMenuItemInput }) => updateMenuItem(id, input),
+    onSuccess: (item) => {
+      syncOverlay(item);
       queryClient.invalidateQueries({ queryKey: queryKeys.menu() });
       toast.success('Item actualizado exitosamente');
     },
-    onError: (error: Error) => {
-      const message = getErrorMessage(error);
-      toast.error(message);
-    },
+    onError: (error: Error) => toast.error(getErrorMessage(error)),
   });
 }
 
 export function useToggleMenuItem() {
   const queryClient = useQueryClient();
-  const { remember, forget } = useMenuOverlayStore();
-
   return useMutation({
-    mutationFn: async ({ item, available }: { item: MenuItem; available: boolean }) => {
-      return updateMenuItem(item.id, { available });
-    },
+    mutationFn: ({ item, available }: { item: MenuItem; available: boolean }) => updateMenuItem(item.id, { available }),
     onMutate: async ({ item, available }) => {
-      if (!available) {
-        remember({ ...item, available: false });
-      }
+      const previousOverlayItem = useMenuOverlayStore.getState().hiddenItems[item.id];
+      if (!available) useMenuOverlayStore.getState().remember({ ...item, available: false });
+      return { previousOverlayItem };
     },
-    onSuccess: (data, { available }) => {
-      if (available) {
-        forget(data.id);
-      }
+    onSuccess: (item) => {
+      syncOverlay(item);
       queryClient.invalidateQueries({ queryKey: queryKeys.menu() });
-      const action = available ? 'activado' : 'desactivado';
-      toast.success(`Item ${action} exitosamente`);
+      toast.success(`Item ${item.available ? 'activado' : 'desactivado'} exitosamente`);
     },
-    onError: (error: Error, { item }) => {
-      if (!item.available) {
-        forget(item.id);
-      }
-      const message = getErrorMessage(error);
-      toast.error(message);
+    onError: (error: Error, variables, context) => {
+      const { remember, forget } = useMenuOverlayStore.getState();
+      if (context?.previousOverlayItem) remember(context.previousOverlayItem);
+      else if (!variables.available) forget(variables.item.id);
+      toast.error(getErrorMessage(error));
     },
   });
 }
 
 function getErrorMessage(error: Error): string {
-  if (error instanceof ApiError) {
-    if (error.code === 'VALIDATION_ERROR') {
-      return `Datos invalidos: ${error.message}`;
-    }
-    return error.message;
-  }
-  if (error instanceof NetworkError) {
-    return 'Sin conexion con el servidor';
-  }
+  if (error instanceof ApiError) return error.code === 'VALIDATION_ERROR' ? `Datos invalidos: ${error.message}` : error.message;
+  if (error instanceof NetworkError) return 'Sin conexion con el servidor';
   return 'Error desconocido';
 }

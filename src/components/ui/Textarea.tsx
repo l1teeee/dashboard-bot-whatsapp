@@ -1,29 +1,3 @@
-﻿import React from 'react';
-import { cn } from '@/lib/cn';
-
-interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
-  error?: string;
-  rows?: number;
-}
-
-export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, rows = 3, ...props }, ref) => (
-    <div className="space-y-1">
-      {label && <label className="block text-sm font-medium text-ink">{label}</label>}
-      <textarea
-        ref={ref}
-        rows={rows}
-        className={cn(
-          'w-full px-3 py-2 border border-border rounded-card bg-surface text-ink placeholder:text-ink-soft focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2',
-          error && 'border-cancelled',
-          className,
-        )}
-        {...props}
-      />
-      {error && <p className="text-sm text-cancelled">{error}</p>}
-    </div>
-  ),
-);
-
-Textarea.displayName = 'Textarea';
+import React, { useId } from 'react'; import { cn } from '@/lib/cn';
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { label?: string; error?: string; rows?: number; }
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ className, label, error, rows = 3, id, ...props }, ref) => { const uid = useId(); const fieldId = id || uid; const errorId = `${fieldId}-error`; return <div className="space-y-1.5">{label && <label htmlFor={fieldId} className="block text-sm font-bold">{label}</label>}<textarea ref={ref} id={fieldId} rows={rows} aria-invalid={Boolean(error)} aria-describedby={error ? errorId : undefined} className={cn('w-full rounded-2xl border border-border bg-surface-raised px-4 py-3 text-ink placeholder:text-ink-soft focus-ring', error && 'border-coral', className)} {...props}/>{error && <p id={errorId} className="text-sm font-medium text-coral">{error}</p>}</div>; }); Textarea.displayName = 'Textarea';

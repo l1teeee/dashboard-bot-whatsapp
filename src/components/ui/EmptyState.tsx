@@ -1,17 +1,2 @@
-﻿import React from 'react';
-
-interface EmptyStateProps {
-  title: string;
-  description?: string;
-  action?: React.ReactNode;
-}
-
-export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, action }) => (
-  <div className="flex flex-col items-center justify-center py-12 text-center">
-    <h3 className="text-lg font-semibold text-ink mb-2">{title}</h3>
-    {description && <p className="text-sm text-ink-soft mb-4">{description}</p>}
-    {action && <div>{action}</div>}
-  </div>
-);
-
-EmptyState.displayName = 'EmptyState';
+import React from 'react'; import { Inbox } from 'lucide-react';
+export const EmptyState: React.FC<{title:string;description?:string;action?:React.ReactNode}> = ({title,description,action}) => <div className="flex min-h-48 flex-col items-center justify-center rounded-[24px] border border-dashed border-border p-8 text-center"><div className="mb-3 grid h-12 w-12 place-items-center rounded-full bg-surface-raised"><Inbox className="h-6 w-6 text-ink-soft"/></div><h3 className="font-display text-2xl font-bold uppercase">{title}</h3>{description && <p className="mt-2 max-w-sm text-sm text-ink-soft">{description}</p>}{action && <div className="mt-4">{action}</div>}</div>; EmptyState.displayName = 'EmptyState';
