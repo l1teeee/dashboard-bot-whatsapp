@@ -20,7 +20,7 @@ describe('LandingPage', () => {
     expect(screen.getByRole('link', { name: /comenzar ahora/i })).toHaveAttribute('href', '/register');
   });
 
-  it('uses a full-width page shell without a capped container', () => {
+  it('uses a centered desktop shell while remaining fluid on small screens', () => {
     render(
       <MemoryRouter>
         <LandingPage />
@@ -29,6 +29,7 @@ describe('LandingPage', () => {
 
     const shell = screen.getByTestId('landing-page');
     expect(shell).toHaveClass('w-full');
-    expect(shell.className).not.toMatch(/max-w-|mx-auto|\bp-[0-9]/);
+    expect(shell).toHaveClass('lg:p-4');
+    expect(shell.querySelector('.mx-auto')).toHaveClass('lg:max-w-[1480px]');
   });
 });

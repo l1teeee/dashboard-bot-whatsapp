@@ -27,11 +27,11 @@ export function HeroOperationsPreview() {
     >
       <div className="pattern-radial absolute inset-0 opacity-40" />
       <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-ink-dark bg-warm px-3 py-2 text-[10px] font-extrabold uppercase tracking-[.12em] neo-shadow sm:left-8 sm:top-8">
-        <span className="h-2 w-2 rounded-full bg-[#48B88A]" />
+        <span className="landing-live-dot h-2 w-2 rounded-full bg-[#48B88A]" />
         Operación conectada
       </div>
 
-      <div className="absolute right-[-28px] top-20 z-20 hidden w-52 rotate-[5deg] rounded-[22px] border border-ink-dark bg-yellow p-4 neo-shadow sm:block lg:right-[-12px]">
+      <div className="landing-float-delay absolute right-[-28px] top-20 z-20 hidden w-52 rotate-[5deg] rounded-[22px] border border-ink-dark bg-yellow p-4 neo-shadow sm:block lg:right-[-12px]">
         <div className="flex items-center justify-between">
           <span className="kicker">Nuevo pedido</span>
           <Bell className="h-4 w-4" />
@@ -40,7 +40,7 @@ export function HeroOperationsPreview() {
         <p className="mt-2 text-xs font-bold">3 productos · $24.50</p>
       </div>
 
-      <div className="absolute bottom-12 left-[-22px] z-20 hidden w-48 -rotate-[4deg] rounded-[22px] border border-ink-dark bg-coral p-4 neo-shadow sm:block lg:left-[-5px]">
+      <div className="landing-float-negative absolute bottom-12 left-[-22px] z-20 hidden w-48 -rotate-[4deg] rounded-[22px] border border-ink-dark bg-coral p-4 neo-shadow sm:block lg:left-[-5px]">
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 place-items-center rounded-full border border-ink-dark bg-warm">
             <Check className="h-4 w-4" />
@@ -52,7 +52,7 @@ export function HeroOperationsPreview() {
         </div>
       </div>
 
-      <div className="relative z-10 w-full max-w-[315px] translate-y-8 rounded-[42px] border-[3px] border-ink-dark bg-[#111110] p-2.5 shadow-[0_8px_0_#111] sm:translate-y-10">
+      <div className="landing-phone-enter relative z-10 w-full max-w-[315px] translate-y-8 rounded-[42px] border-[3px] border-ink-dark bg-[#111110] p-2.5 shadow-[0_8px_0_#111] sm:translate-y-10">
         <div className="relative overflow-hidden rounded-[32px] border border-border bg-surface pb-3 text-ink">
           <div className="absolute left-1/2 top-2 z-20 h-5 w-20 -translate-x-1/2 rounded-full bg-[#0a0a09]" />
           <div className="flex items-center justify-between px-4 pb-3 pt-10">
@@ -79,7 +79,7 @@ export function HeroOperationsPreview() {
               <Clock3 className="h-5 w-5" />
             </div>
             <div className="mt-4 h-2 overflow-hidden rounded-full bg-ink-dark/15">
-              <div className="h-full w-[72%] rounded-full bg-coral" />
+              <div className="landing-progress h-full w-[72%] rounded-full bg-coral" />
             </div>
           </div>
 
@@ -112,7 +112,7 @@ export function HeroOperationsPreview() {
               </div>
               <div className="flex h-11 items-end gap-1">
                 {[34, 55, 43, 72, 64].map((height, index) => (
-                  <span key={index} className="w-2 rounded-t bg-ink-dark" style={{ height: `${height}%` }} />
+                  <span key={index} className="landing-mini-bar w-2 rounded-t bg-ink-dark" style={{ height: `${height}%`, animationDelay: `${index * 90}ms` }} />
                 ))}
               </div>
             </div>
@@ -172,7 +172,7 @@ export function DashboardMarketingPreview() {
                 <div className="mt-6 flex h-24 items-end gap-2 sm:h-28 sm:gap-3">
                   {weekBars.map((height, index) => (
                     <div key={index} className="flex h-full flex-1 flex-col justify-end gap-1">
-                      <span className={`${index === 5 ? 'bg-yellow' : 'bg-mint'} rounded-t-lg border border-ink-dark/20`} style={{ height: `${height}%` }} />
+                      <span className={`landing-chart-bar ${index === 5 ? 'bg-yellow' : 'bg-mint'} rounded-t-lg border border-ink-dark/20`} style={{ height: `${height}%`, animationDelay: `${index * 80}ms` }} />
                       <span className="text-center text-[7px] font-black">{['L', 'M', 'X', 'J', 'V', 'S', 'D'][index]}</span>
                     </div>
                   ))}
@@ -193,7 +193,7 @@ export function DashboardMarketingPreview() {
                   ].map(([label, value, color, width]) => (
                     <div key={label}>
                       <div className="mb-1 flex justify-between text-[9px] font-black uppercase"><span>{label}</span><span>{value}</span></div>
-                      <div className="h-2 rounded-full bg-ink-dark/15"><div className={`h-full rounded-full border border-ink-dark/20 ${color} ${width}`} /></div>
+                      <div className="h-2 rounded-full bg-ink-dark/15"><div className={`landing-progress h-full rounded-full border border-ink-dark/20 ${color} ${width}`} /></div>
                     </div>
                   ))}
                 </div>

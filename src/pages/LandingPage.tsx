@@ -15,11 +15,20 @@ import {
   UtensilsCrossed,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import heroLayers from '@/assets/hero.png';
 import {
   DashboardMarketingPreview,
   HeroOperationsPreview,
 } from '@/components/landing/LandingPreview';
+
+function Reveal({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+  return (
+    <div className={`landing-reveal ${className}`} style={{ animationDelay: `${delay}s` }}>
+      {children}
+    </div>
+  );
+}
 
 const processSteps = [
   {
@@ -164,30 +173,32 @@ function HeroSection() {
       <div className="grid w-full gap-3 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="flex min-h-[620px] flex-col justify-between rounded-[28px] border border-border bg-surface p-6 sm:p-9 lg:min-h-[720px] lg:p-10 xl:p-12">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-shell px-3 py-2 text-[9px] font-extrabold uppercase tracking-[.12em] text-yellow">
+            <div className="landing-float inline-flex items-center gap-2 rounded-full border border-border bg-shell px-3 py-2 text-[9px] font-extrabold uppercase tracking-[.12em] text-yellow">
               <Sparkles className="h-3.5 w-3.5" />
               Operación de pedidos, sin ruido
             </div>
 
-            <h1
-              id="hero-title"
-              aria-label="Pedidos claros. Cocina en movimiento."
-              className="display-title mt-10 text-[clamp(4.25rem,9vw,8.5rem)] lg:text-[clamp(5rem,7vw,8rem)]"
-            >
-              Pedidos
-              <br />
-              claros.
-              <br />
-              Cocina en
-              <br />
-              <span className="text-coral">movimiento.</span>
-            </h1>
+            <Reveal delay={0.08}>
+              <h1
+                id="hero-title"
+                aria-label="Pedidos claros. Cocina en movimiento."
+                className="display-title mt-10 text-[clamp(4.25rem,9vw,8.5rem)] lg:text-[clamp(5rem,7vw,8rem)]"
+              >
+                Pedidos
+                <br />
+                claros.
+                <br />
+                Cocina en
+                <br />
+                <span className="text-coral">movimiento.</span>
+              </h1>
+            </Reveal>
 
             <p className="mt-7 text-balance text-sm font-medium leading-6 text-ink-soft sm:text-base sm:leading-7">
               Convierte cada pedido que entra por WhatsApp en una operación visible, ordenada y fácil de llevar de pendiente a completado.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="landing-hero-enter mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/register"
                 className="focus-ring group inline-flex min-h-12 items-center justify-center gap-4 rounded-[15px] border border-ink-dark bg-coral px-5 text-xs font-black text-ink-dark neo-shadow transition-transform hover:-translate-y-0.5"
@@ -206,14 +217,14 @@ function HeroSection() {
           </div>
 
           <div className="mt-9 grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[20px] border border-border bg-surface-raised p-4">
+            <div className="landing-hover-card rounded-[20px] border border-border bg-surface-raised p-4">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-yellow text-ink-dark">
                 <Sparkles className="h-4 w-4" />
               </span>
               <p className="font-display mt-4 text-xl font-bold uppercase">Todo en vivo</p>
               <p className="mt-1 text-[10px] font-semibold leading-4 text-ink-soft">La cola se refresca mientras el equipo trabaja.</p>
             </div>
-            <div className="rounded-[20px] border border-border bg-surface-raised p-4">
+            <div className="landing-hover-card rounded-[20px] border border-border bg-surface-raised p-4">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-mint text-ink-dark">
                 <LayoutDashboard className="h-4 w-4" />
               </span>
@@ -223,7 +234,7 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className="min-h-[560px] lg:min-h-[720px]">
+        <div className="landing-hero-enter min-h-[560px] lg:min-h-[720px]">
           <HeroOperationsPreview />
         </div>
       </div>
@@ -231,18 +242,27 @@ function HeroSection() {
   );
 }
 
+function TickerItems({ items, ariaHidden = false }: { items: string[]; ariaHidden?: boolean }) {
+  return (
+    <div aria-hidden={ariaHidden || undefined} className="flex shrink-0 items-center gap-5 pr-5">
+      {items.map((item) => (
+        <div key={item} className="flex shrink-0 items-center gap-5">
+          <span className="text-[9px] font-black uppercase tracking-[.18em] sm:text-[10px]">{item}</span>
+          <span aria-hidden="true" className="text-coral">✦</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Ticker() {
   const items = ['Pedidos en vivo', 'Menú', 'Historial', 'Analíticas', 'Estados claros', 'Acceso seguro'];
 
   return (
-    <div className="w-full border-y border-ink-dark bg-yellow px-3 py-3 text-ink-dark sm:px-5" aria-label="Funciones principales">
-      <div className="flex w-full flex-wrap items-center justify-center gap-x-5 gap-y-2 sm:justify-between lg:flex-nowrap">
-        {items.map((item, index) => (
-          <div key={item} className="flex items-center gap-5">
-            <span className="text-[9px] font-black uppercase tracking-[.18em] sm:text-[10px]">{item}</span>
-            {index < items.length - 1 && <span className="text-coral">✦</span>}
-          </div>
-        ))}
+    <div className="w-full overflow-hidden border-y border-ink-dark bg-yellow py-3 text-ink-dark" aria-label="Funciones principales">
+      <div className="landing-marquee flex w-max items-center">
+        <TickerItems items={items} />
+        <TickerItems items={items} ariaHidden />
       </div>
     </div>
   );
@@ -301,9 +321,9 @@ function ProductSection() {
         </div>
       </div>
 
-      <div className="mt-10 w-full">
+      <Reveal className="mt-10 w-full" delay={0.08}>
         <DashboardMarketingPreview />
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -323,7 +343,7 @@ function FeaturesSection() {
 
       <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {featureCards.map(({ title, copy, icon: Icon, className, accent }) => (
-          <article key={title} className={`relative min-h-64 overflow-hidden rounded-[26px] border-2 border-ink-dark p-5 neo-shadow sm:p-6 ${className}`}>
+          <article key={title} className={`relative min-h-64 overflow-hidden rounded-[26px] border-2 border-ink-dark p-5 neo-shadow transition duration-300 hover:-translate-y-1 hover:shadow-[0_7px_0_#111] sm:p-6 ${className}`}>
             <div className="pattern-diagonal absolute inset-0 opacity-20" />
             <div className="relative flex h-full flex-col justify-between">
               <div className="flex items-start justify-between gap-3">
@@ -469,23 +489,27 @@ function LandingFooter() {
 
 export function LandingPage() {
   return (
-    <div data-testid="landing-page" className="min-h-screen w-full min-w-0 overflow-hidden bg-shell text-ink">
-      <a href="#contenido" className="focus-ring fixed left-3 top-3 z-[100] -translate-y-24 rounded-full bg-yellow px-4 py-2 text-xs font-black text-ink-dark focus:translate-y-0">
-        Saltar al contenido
-      </a>
-      <LandingHeader />
-      <main id="contenido" className="w-full">
-        <HeroSection />
-        <Ticker />
-        <ProcessSection />
-        <ProductSection />
-        <FeaturesSection />
-        <BenefitsSection />
-        <FaqSection />
-        <FinalCta />
-      </main>
-      <LandingFooter />
-    </div>
+    <MotionConfig reducedMotion="user">
+      <div data-testid="landing-page" className="min-h-screen w-full min-w-0 overflow-x-hidden bg-canvas p-0 text-ink lg:p-4">
+        <a href="#contenido" className="focus-ring fixed left-3 top-3 z-[100] -translate-y-24 rounded-full bg-yellow px-4 py-2 text-xs font-black text-ink-dark focus:translate-y-0">
+          Saltar al contenido
+        </a>
+        <div className="mx-auto w-full overflow-hidden bg-shell lg:max-w-[1480px] lg:rounded-[42px] lg:border-2 lg:border-ink-dark lg:shadow-[0_7px_0_#111]">
+          <LandingHeader />
+          <main id="contenido" className="w-full">
+            <HeroSection />
+            <Ticker />
+            <ProcessSection />
+            <ProductSection />
+            <FeaturesSection />
+            <BenefitsSection />
+            <FaqSection />
+            <FinalCta />
+          </main>
+          <LandingFooter />
+        </div>
+      </div>
+    </MotionConfig>
   );
 }
 

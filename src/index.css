@@ -52,6 +52,29 @@ button, input, select, textarea { font: inherit; }
 @keyframes surface-scale-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .98; } }
 @keyframes surface-slide-up { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: translateY(0); } }
 @keyframes surface-slide-down { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(.75rem); } }
+@keyframes landing-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes landing-float-delay { 0%, 100% { transform: rotate(5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-9px); } }
+@keyframes landing-float-negative { 0%, 100% { transform: rotate(-4deg) translateY(0); } 50% { transform: rotate(-4deg) translateY(-8px); } }
+@keyframes landing-phone-enter { from { opacity: .86; transform: translateY(42px) scale(.97); } to { opacity: 1; transform: translateY(2rem) scale(1); } }
+@keyframes landing-hero-enter { from { opacity: .78; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes landing-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(72,184,138,.5); } 50% { box-shadow: 0 0 0 7px rgba(72,184,138,0); } }
+@keyframes landing-grow { from { transform: scaleX(.35); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
+@keyframes landing-bar-rise { from { transform: scaleY(.25); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
+@keyframes landing-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.landing-float { animation: landing-float 4.5s ease-in-out infinite; }
+.landing-float-delay { animation: landing-float-delay 5.5s ease-in-out .55s infinite; }
+.landing-float-negative { animation: landing-float-negative 4.8s ease-in-out .2s infinite; }
+.landing-phone-enter { animation: landing-phone-enter .8s cubic-bezier(.22,1,.36,1) both; }
+.landing-hero-enter { animation: landing-hero-enter .55s cubic-bezier(.22,1,.36,1) .15s both; }
+.landing-live-dot { animation: landing-pulse 2s ease-in-out infinite; }
+.landing-progress { animation: landing-grow .7s cubic-bezier(.22,1,.36,1) both; }
+.landing-mini-bar, .landing-chart-bar { animation: landing-bar-rise .55s cubic-bezier(.22,1,.36,1) both; }
+.landing-marquee { animation: landing-marquee 24s linear infinite; }
+.landing-hover-card { transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease; }
+.landing-hover-card:hover { transform: translateY(-4px) rotate(.25deg); box-shadow: 0 6px 0 #111; }
+@supports (animation-timeline: view()) {
+  .landing-reveal { animation: landing-hero-enter .6s cubic-bezier(.22,1,.36,1) both; animation-timeline: view(); animation-range: entry 8% cover 28%; }
+}
 .dialog-overlay[data-state="open"], .command-overlay[data-state="open"] { animation: surface-fade-in 240ms cubic-bezier(.22,1,.36,1) both; }
 .dialog-overlay[data-state="closed"], .command-overlay[data-state="closed"] { animation: surface-fade-out 220ms cubic-bezier(.4,0,1,1) both; }
 .dialog-content[data-state="open"], .command-content[data-state="open"], .dropdown-content[data-state="open"] { animation: surface-scale-in 260ms cubic-bezier(.22,1,.36,1) both; transform-origin: var(--radix-dropdown-menu-content-transform-origin, center); }
@@ -60,4 +83,4 @@ button, input, select, textarea { font: inherit; }
   .dialog-content[data-state="open"] { animation: surface-slide-up 280ms cubic-bezier(.22,1,.36,1) both; }
   .dialog-content[data-state="closed"] { animation: surface-slide-down 220ms cubic-bezier(.4,0,1,1) both; }
 }
-@media (prefers-reduced-motion: reduce) { *,::before,::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }
+@media (prefers-reduced-motion: reduce) { *,::before,::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } .landing-marquee { width: 100%; transform: none !important; } }
