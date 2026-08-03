@@ -9,10 +9,21 @@ npm install
 npm run dev
 ```
 
-Abre http://localhost:3000 y pega la API key cuando se te pida.
+Abre http://localhost:3000. Si el backend no tiene ninguna cuenta todavia, el login
+ofrece el enlace de registro para crear la cuenta inicial.
 
-La clave se guarda solo en memoria. Al recargar la pagina se vuelve a pedir: no hay
-localStorage, sessionStorage ni cookies.
+Rutas principales:
+
+- `/`: redirige a `/dashboard`.
+- `/login`: acceso mediante email y contrasena.
+- `/register`: registro inicial cuando el backend lo habilita.
+- `/accept-invite`: alta de miembros invitados.
+- `/dashboard`: operacion de pedidos en vivo.
+- `/orders`, `/analytics`, `/menu` y `/settings`: vistas protegidas de operacion y configuracion.
+
+El access token se mantiene solo en memoria. La aplicacion intenta recuperar la
+sesion mediante el endpoint de refresh y limpia el estado local al cerrar sesion;
+no utiliza localStorage ni sessionStorage para credenciales.
 
 ## Stack
 
@@ -30,7 +41,8 @@ src/
     menu/      lista, cards, formulario
   hooks/       useOrders, useOrder, useUpdateOrderStatus, useMenu, useMenuMutations
   lib/         cn, format, orderStatus, queryKeys
-  pages/       LoginPage, DashboardPage, OrdersPage, MenuPage
+  pages/       LoginPage, RegisterPage, AcceptInvitePage, DashboardPage, OrdersPage,
+               AnalyticsPage, MenuPage, SettingsPage
   store/       auth, connection, menuOverlay
   types/       order, menu, api
 ```
@@ -39,30 +51,37 @@ Toda la interfaz se construye sobre `src/components/ui`. Los colores por estado 
 mapa, `src/lib/orderStatus.ts`, y los tokens de color viven en el bloque `@theme` de `src/index.css`.
 Para cambiar la linea grafica se tocan esos dos archivos, no los componentes.
 
+## Sesion
+
+El access token (JWT, 15 minutos) vive **solo en memoria**, en el store de zustand. El refresh token
+viaja en una cookie `httpOnly` que el navegador gestiona por su cuenta; el codigo nunca la lee. No se
+usa localStorage ni sessionStorage para credenciales.
+
+Al cargar la aplicacion, `App.tsx` llama a `POST /api/auth/refresh` para recuperar la sesion. Mientras
+esa llamada esta en curso el estado es `loading` y `RequireAuth` muestra el fallback en vez de
+redirigir, que es lo que evita el parpadeo hacia el login al recargar.
+
+Cuando una peticion recibe un 401, `src/api/client.ts` dispara **un solo** refresh aunque fallen
+varias a la vez (la promesa se comparte en una variable de modulo) y reintenta la original una unica
+vez. Si el refresh falla, limpia la sesion.
+
 ## Decisiones tomadas por restricciones del backend
 
-El backend no se modifico. Estas cuatro decisiones responden a comportamientos verificados
-contra produccion.
+### 1. Proxy en lugar de llamadas directas
 
-### 1. Proxy de Vite en lugar de llamadas directas
+`vite.config.ts` fija el puerto 3000 y hace proxy de `/api` hacia Railway; en produccion `vercel.json`
+replica lo mismo con un rewrite. El navegador siempre habla con su propio origen.
 
-El backend solo permite el origen `http://localhost:3000` y Vite usa 5173 por defecto, asi que
-el navegador bloqueaba todas las llamadas. `vite.config.ts` fija el puerto 3000 y ademas define un
-proxy de `/api` hacia Railway: el navegador habla con su propio origen y Vite reenvia desde el
-servidor, donde CORS no aplica.
-
-Para desplegar en produccion hay que replicar ese proxy en el hosting (rewrites de Vercel o Netlify)
-o pedir que agreguen el dominio del panel a `CORS_ORIGINS_LIST` en el backend.
+Ademas de resolver CORS, esto es lo que permite que la cookie de sesion use `SameSite=Lax`: al ser
+mismo origen no hace falta `SameSite=None`, y el CSRF queda cortado de raiz.
 
 ### 2. Una sola consulta de ordenes para toda la app
 
-`/api/orders` tiene un limite de 30 peticiones por minuto. El panel hace UNA consulta
+`/api/orders` esta limitado a 120 peticiones por minuto. El panel hace UNA consulta
 (`limit=100`, sin filtros) que se refresca cada 15 segundos, y reparte las ordenes en las columnas
 del kanban en el cliente. El dashboard y el historial comparten la misma entrada de cache de React
 Query, asi que entre los dos siguen siendo unas 4 peticiones por minuto. El polling se pausa cuando
 la pestana no esta visible.
-
-Si en el futuro se hace una consulta por columna, el limite se agota en segundos.
 
 ### 3. Filtros de busqueda y fecha en el cliente
 
@@ -72,7 +91,7 @@ rango de fechas se aplica sobre las ordenes ya cargadas.
 
 ### 4. Items de menu desactivados
 
-`GET /api/menu` ejecuta `SELECT * FROM menu_items WHERE available = true`, asi que un item
+`GET /api/menu` solo devuelve los items con `available = true`, asi que un item
 desactivado desaparece de la respuesta y no habria forma de reactivarlo desde la interfaz.
 `src/store/menuOverlay.ts` recuerda esos items durante la sesion y los sigue mostrando atenuados
 para poder volver a activarlos.

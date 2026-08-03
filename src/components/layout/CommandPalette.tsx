@@ -9,7 +9,7 @@ import { formatCurrency, formatPhone } from '@/lib/format';
 
 type CommandItem = { id: string; type: 'nav' | 'order'; label?: string; path?: string; icon?: React.ReactNode; orderId?: number; phone?: string; status?: string; total?: number; };
 const navigation: CommandItem[] = [
-  { id: 'nav-dashboard', type: 'nav', label: 'En vivo', path: '/', icon: <LayoutDashboard className="h-4 w-4" /> },
+  { id: 'nav-dashboard', type: 'nav', label: 'En vivo', path: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
   { id: 'nav-orders', type: 'nav', label: 'Historial', path: '/orders', icon: <History className="h-4 w-4" /> },
   { id: 'nav-analytics', type: 'nav', label: 'Analíticas', path: '/analytics', icon: <BarChart3 className="h-4 w-4" /> },
   { id: 'nav-menu', type: 'nav', label: 'Menú', path: '/menu', icon: <UtensilsCrossed className="h-4 w-4" /> },
