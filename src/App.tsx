@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth';
 import { refresh } from '@/api/auth';
 
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(({ LoginPage }) => ({ default: LoginPage })));
+const LandingPage = lazy(() => import('@/pages/LandingPage').then(({ LandingPage }) => ({ default: LandingPage })));
 const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(({ RegisterPage }) => ({ default: RegisterPage })));
 const AcceptInvitePage = lazy(() => import('@/pages/AcceptInvitePage').then(({ AcceptInvitePage }) => ({ default: AcceptInvitePage })));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(({ DashboardPage }) => ({ default: DashboardPage })));
@@ -38,7 +39,7 @@ function AppWithRehydration() {
 
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
       <Route path="/login" element={<LazyRoute><LoginPage /></LazyRoute>} />
       <Route path="/register" element={<LazyRoute><RegisterPage /></LazyRoute>} />
       <Route path="/accept-invite" element={<LazyRoute><AcceptInvitePage /></LazyRoute>} />

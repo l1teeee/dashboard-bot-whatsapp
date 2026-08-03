@@ -9,10 +9,11 @@ describe('public and protected routes', () => {
     window.history.replaceState({}, '', '/');
   });
 
-  it('sends anonymous visitors from the root route to the login', async () => {
+  it('shows the public landing page at the root route', async () => {
     render(<App />);
-    expect(await screen.findByRole('heading', { name: /acceso operativo/i })).toBeInTheDocument();
-    expect(window.location.pathname).toBe('/login');
+    expect(await screen.findByRole('heading', { name: /pedidos claros.*cocina en movimiento/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /entrar al panel/i })).toHaveAttribute('href', '/login');
+    expect(window.location.pathname).toBe('/');
   });
 
   it('keeps the operational dashboard protected', async () => {

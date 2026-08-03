@@ -30,7 +30,7 @@
 }
 
 * { box-sizing: border-box; }
-html { background: #C8D6CF; }
+html { background: #C8D6CF; scroll-behavior: smooth; scroll-padding-top: 6rem; }
 body { @apply bg-canvas text-ink; min-width: 320px; font-family: 'Manrope Variable', Manrope, sans-serif; overflow-x: hidden; }
 button, input, select, textarea { font: inherit; }
 ::selection { background: #FFD468; color: #1B1B19; }
