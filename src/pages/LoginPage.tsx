@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
+  ArrowLeft,
   ChefHat,
   Eye,
   EyeOff,
@@ -16,7 +17,10 @@ import { Button, Input, IconButton } from '@/components/ui';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { status, account, setSession, clearSession } = useAuthStore();
+  const location = useLocation();
+  const { setSession, clearSession } = useAuthStore();
+  const redirectTo =
+    (location.state as { from?: string } | null)?.from || '/dashboard';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -29,10 +33,6 @@ export function LoginPage() {
       .then((res) => setRegistrationOpen(res.open))
       .catch(() => setRegistrationOpen(false));
   }, []);
-
-  if (status === 'authenticated' && account) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -53,7 +53,7 @@ export function LoginPage() {
         password: trimmedPassword,
       });
       setSession(sessionData);
-      navigate('/dashboard', { replace: true });
+      navigate(redirectTo, { replace: true });
     } catch (err) {
       clearSession();
       if (err instanceof ApiError && err.status === 401) {
@@ -152,6 +152,14 @@ export function LoginPage() {
 
         {/* Right Panel */}
         <section className="flex min-h-dvh flex-col justify-center p-6 sm:p-10 lg:min-h-0 lg:p-12">
+          <Link
+            to="/"
+            className="focus-ring mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-ink-dark bg-warm px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-ink-dark transition-transform hover:-translate-x-0.5"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver al inicio
+          </Link>
+
           <div className="mb-10 flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full border border-ink-dark bg-coral text-ink-dark neo-shadow">
               <ChefHat className="h-6 w-6" />
@@ -240,12 +248,12 @@ export function LoginPage() {
           {registrationOpen && (
             <p className="mt-5 text-center text-sm text-ink-soft">
               ¿No tienes cuenta?{' '}
-              <a
-                href="/register"
+              <Link
+                to="/register"
                 className="font-bold text-coral hover:underline"
               >
                 Regístrate aquí
-              </a>
+              </Link>
             </p>
           )}
 

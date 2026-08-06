@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
+  ArrowLeft,
   ChefHat,
   Eye,
   EyeOff,
@@ -13,9 +14,21 @@ import { register, getRegistrationStatus } from '@/api/auth';
 import { ApiError, NetworkError } from '@/types/api';
 import { Button, Input, IconButton } from '@/components/ui';
 
+function BackToLanding() {
+  return (
+    <Link
+      to="/"
+      className="focus-ring inline-flex w-fit items-center gap-2 rounded-full border border-ink-dark bg-warm px-4 py-2 text-[10px] font-black uppercase tracking-[.12em] text-ink-dark transition-transform hover:-translate-x-0.5"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Volver al inicio
+    </Link>
+  );
+}
+
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { status, account, setSession, clearSession } = useAuthStore();
+  const { setSession, clearSession } = useAuthStore();
   const [name, setName] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
   const [email, setEmail] = useState('');
@@ -39,14 +52,12 @@ export function RegisterPage() {
       });
   }, []);
 
-  if (status === 'authenticated' && account) {
-    return <Navigate to="/dashboard" replace />;
-  }
-
   if (registrationOpen === false) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-canvas p-6">
         <div className="w-full max-w-md space-y-6 rounded-[30px] border border-border bg-surface p-8 neo-shadow">
+          <BackToLanding />
+
           <div className="flex items-center gap-3">
             <div className="grid h-12 w-12 place-items-center rounded-full border border-ink-dark bg-coral text-ink-dark neo-shadow">
               <ChefHat className="h-6 w-6" />
@@ -76,12 +87,12 @@ export function RegisterPage() {
             </p>
           </div>
 
-          <a
-            href="/login"
+          <Link
+            to="/login"
             className="block text-center font-bold text-coral hover:underline"
           >
             Volver a iniciar sesión
-          </a>
+          </Link>
         </div>
       </main>
     );
@@ -171,6 +182,8 @@ export function RegisterPage() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md space-y-6 rounded-[30px] border border-border bg-surface p-8 neo-shadow"
       >
+        <BackToLanding />
+
         <div className="flex items-center gap-3">
           <div className="grid h-12 w-12 place-items-center rounded-full border border-ink-dark bg-coral text-ink-dark neo-shadow">
             <ChefHat className="h-6 w-6" />
@@ -284,9 +297,9 @@ export function RegisterPage() {
 
         <p className="text-center text-sm text-ink-soft">
           ¿Ya tienes cuenta?{' '}
-          <a href="/login" className="font-bold text-coral hover:underline">
+          <Link to="/login" className="font-bold text-coral hover:underline">
             Inicia sesión aquí
-          </a>
+          </Link>
         </p>
 
         <div className="flex gap-3 rounded-2xl border border-border bg-shell p-4 text-xs leading-relaxed text-ink-soft">

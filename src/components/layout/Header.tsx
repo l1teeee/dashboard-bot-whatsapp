@@ -43,7 +43,8 @@ export function Header() {
   const openSearch = () => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true }));
 
   return (
-    <header className="flex min-h-[76px] items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-6">
+    <header className="relative flex min-h-[76px] items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <span aria-hidden="true" className="pointer-events-none absolute inset-x-4 bottom-0 h-px bg-border sm:inset-x-6" />
       <div className="flex min-w-0 items-center gap-3">
         <IconButton
           className="hidden lg:grid"

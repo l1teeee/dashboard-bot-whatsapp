@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { RequireAuth } from '@/components/layout/RequireAuth';
+import { PublicOnly } from '@/components/layout/PublicOnly';
 import { RouteFallback } from '@/components/layout/RouteFallback';
 import { useAuthStore } from '@/store/auth';
 import { refresh } from '@/api/auth';
@@ -19,6 +20,18 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(({ SettingsP
 
 function LazyRoute({ children }: { children: ReactNode }) {
   return <Suspense fallback={<RouteFallback />}>{children}</Suspense>;
+}
+
+// Una ruta desconocida no debe expulsar de la sesion: con sesion activa
+// devuelve al panel, sin sesion a la landing.
+function NotFoundRedirect() {
+  const { status } = useAuthStore();
+
+  if (status === 'idle' || status === 'loading') {
+    return <RouteFallback />;
+  }
+
+  return <Navigate to={status === 'authenticated' ? '/dashboard' : '/'} replace />;
 }
 
 function AppWithRehydration() {
@@ -40,9 +53,18 @@ function AppWithRehydration() {
   return (
     <Routes>
       <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
-      <Route path="/login" element={<LazyRoute><LoginPage /></LazyRoute>} />
-      <Route path="/register" element={<LazyRoute><RegisterPage /></LazyRoute>} />
-      <Route path="/accept-invite" element={<LazyRoute><AcceptInvitePage /></LazyRoute>} />
+      <Route
+        path="/login"
+        element={<PublicOnly><LazyRoute><LoginPage /></LazyRoute></PublicOnly>}
+      />
+      <Route
+        path="/register"
+        element={<PublicOnly><LazyRoute><RegisterPage /></LazyRoute></PublicOnly>}
+      />
+      <Route
+        path="/accept-invite"
+        element={<PublicOnly><LazyRoute><AcceptInvitePage /></LazyRoute></PublicOnly>}
+      />
       <Route
         element={
           <RequireAuth>
@@ -56,7 +78,7 @@ function AppWithRehydration() {
         <Route path="menu" element={<LazyRoute><MenuPage /></LazyRoute>} />
         <Route path="settings" element={<LazyRoute><SettingsPage /></LazyRoute>} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundRedirect />} />
     </Routes>
   );
 }
