@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Filter, Search, SlidersHorizontal, X } from 'lucide-react';
-import { Input, Select, Button } from '@/components/ui';
+import { Input, Select, Button, DatePicker } from '@/components/ui';
 import { STATUS_ORDER } from '@/lib/reservationStatus';
 import type { ReservationStatus } from '@/types/reservation';
 import type { FilterState } from './filterReservations';
@@ -36,29 +36,28 @@ export function ReservationFilters({
     ...STATUS_ORDER.map((status) => ({ value: status, label: labels[status] })),
   ];
   const secondaryFilters = (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(10rem,1.1fr)_minmax(8.5rem,.85fr)_minmax(8.5rem,.85fr)]">
+    <div className="grid gap-3 sm:grid-cols-2">
       <Select
         label="Estado"
+        tone="light"
         value={value.status}
         options={options}
         onValueChange={(status) =>
           onChange({ ...value, status: status as FilterState['status'] })
         }
-        className="border-ink-dark bg-warm text-ink-dark shadow-[inset_0_1px_0_rgba(255,255,255,.45)] focus:border-brand sm:col-span-2 lg:col-span-1"
+        className="sm:col-span-2"
       />
-      <Input
+      <DatePicker
         label="Desde"
-        type="date"
         value={value.from}
-        onChange={(event) => onChange({ ...value, from: event.target.value })}
-        className="border-ink-dark bg-warm text-ink-dark shadow-[inset_0_1px_0_rgba(255,255,255,.45)]"
+        onChange={(from) => onChange({ ...value, from })}
+        placeholder="Sin fecha"
       />
-      <Input
+      <DatePicker
         label="Hasta"
-        type="date"
         value={value.to}
-        onChange={(event) => onChange({ ...value, to: event.target.value })}
-        className="border-ink-dark bg-warm text-ink-dark shadow-[inset_0_1px_0_rgba(255,255,255,.45)]"
+        onChange={(to) => onChange({ ...value, to })}
+        placeholder="Sin fecha"
       />
     </div>
   );
@@ -82,35 +81,10 @@ export function ReservationFilters({
           {expanded ? 'Cerrar' : 'Mas filtros'}
         </Button>
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(25rem,1fr)] lg:items-end">
-        <div className="rounded-2xl border border-ink-dark/15 bg-ink-dark/[.045] p-3 sm:p-3.5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1">
-              <Input
-                label="Buscar por teléfono"
-                hint="Escribe cualquier parte del número; ignoramos espacios y guiones."
-                type="search"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="Ej.: +503 1234-5678"
-                value={value.phone}
-                onChange={(event) => onChange({ ...value, phone: event.target.value })}
-                prefix={<Search className="h-5 w-5" />}
-                suffix={
-                  value.phone ? (
-                    <button
-                      type="button"
-                      aria-label="Borrar busqueda"
-                      onClick={() => onChange({ ...value, phone: '' })}
-                      className="grid h-8 w-8 place-items-center rounded-full text-ink-dark/70 transition-colors hover:bg-ink-dark/10 hover:text-ink-dark focus-ring"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  ) : undefined
-                }
-                className="min-h-13 rounded-xl border-ink-dark bg-warm text-[15px] font-medium text-ink-dark placeholder:text-ink-dark/45"
-              />
-            </div>
+      <div className="mt-4 grid items-stretch gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(24rem,1fr)]">
+        <div className="flex flex-col rounded-2xl border border-ink-dark/15 bg-ink-dark/[.045] p-3 sm:p-3.5">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="kicker text-ink-dark/65">Busqueda</p>
             <Button
               type="button"
               variant={value.range === 'upcoming' ? 'primary' : 'secondary'}
@@ -121,8 +95,33 @@ export function ReservationFilters({
               {value.range === 'upcoming' ? 'Proximas' : 'Todas'}
             </Button>
           </div>
+          <Input
+            label="Buscar por teléfono"
+            tone="light"
+            hint="Escribe cualquier parte del número; ignoramos espacios y guiones."
+            type="search"
+            inputMode="tel"
+            autoComplete="tel"
+            placeholder="Ej.: +503 1234-5678"
+            value={value.phone}
+            onChange={(event) => onChange({ ...value, phone: event.target.value })}
+            prefix={<Search className="h-5 w-5" />}
+            suffix={
+              value.phone ? (
+                <button
+                  type="button"
+                  aria-label="Borrar busqueda"
+                  onClick={() => onChange({ ...value, phone: '' })}
+                  className="grid h-8 w-8 place-items-center rounded-full text-ink-dark/70 transition-colors hover:bg-ink-dark/10 hover:text-ink-dark focus-ring"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              ) : undefined
+            }
+            className="min-h-13 text-[15px] font-medium"
+          />
         </div>
-        <div className="hidden rounded-2xl border border-ink-dark/15 bg-ink-dark/[.045] p-3.5 md:block">
+        <div className="hidden flex-col rounded-2xl border border-ink-dark/15 bg-ink-dark/[.045] p-3.5 md:flex">
           <div className="mb-3 flex items-center justify-between gap-3">
             <p className="kicker text-ink-dark/65">Estado y periodo</p>
             {activeCount > 0 && (
