@@ -1,50 +1,59 @@
 @import "tailwindcss";
 
+/*
+ * Paleta "Costa botanica": petroleo + aqua + salvia + citrico.
+ * Conserva el lenguaje grafico alegre del producto sin depender del
+ * coral/violeta dominante de la referencia visual original.
+ */
 @theme {
-  --color-shell: #1E1E1C;
-  --color-surface: #292826;
-  --color-surface-raised: #343230;
-  --color-canvas: #C8D6CF;
-  --color-border: #484540;
-  --color-ink: #F7F3EA;
-  --color-ink-soft: #AAA59E;
-  --color-ink-dark: #1B1B19;
-  --color-brand: #7472FF;
-  --color-brand-soft: #B9B8FF;
-  --color-coral: #FF685C;
-  --color-coral-soft: #FF9186;
-  --color-lilac: #7472FF;
-  --color-mint: #C9D9D1;
-  --color-yellow: #FFD468;
-  --color-cyan: #AFEDF5;
-  --color-warm: #FBF9F2;
-  --color-pending: #FFD468;
-  --color-pending-soft: #5f512a;
-  --color-processing: #7472FF;
-  --color-processing-soft: #37356e;
-  --color-completed: #9ccab5;
-  --color-completed-soft: #28473c;
-  --color-cancelled: #FF685C;
-  --color-cancelled-soft: #66312e;
+  --color-shell: #102A2E;
+  --color-surface: #17363B;
+  --color-surface-raised: #21444A;
+  --color-canvas: #DCEBE6;
+  --color-border: #3D6265;
+  --color-ink: #F8F4E8;
+  --color-ink-soft: #B5CBC7;
+  --color-ink-dark: #10282B;
+  --color-brand: #2F9E91;
+  --color-brand-soft: #9DDBD1;
+  --color-coral: #F2A65A;
+  --color-coral-soft: #F8C58E;
+  --color-lilac: #8AB4F8;
+  --color-mint: #A9D9B7;
+  --color-yellow: #D7DF64;
+  --color-cyan: #78D6D0;
+  --color-warm: #FFF8E7;
+  --color-pending: #E4B94F;
+  --color-pending-soft: #534728;
+  --color-processing: #8AB4F8;
+  --color-processing-soft: #263E61;
+  --color-completed: #76D0AD;
+  --color-completed-soft: #204C41;
+  --color-cancelled: #FF8A7A;
+  --color-cancelled-soft: #5E302D;
+  --color-seated: #78D6D0;
+  --color-seated-soft: #1E4B49;
+  --color-noshow: #C89BE8;
+  --color-noshow-soft: #3E2B4C;
   --radius-card: 1.5rem;
 }
 
 * { box-sizing: border-box; }
-html { background: #C8D6CF; scroll-behavior: smooth; scroll-padding-top: 6rem; }
+html { background: var(--color-canvas); scroll-behavior: smooth; scroll-padding-top: 6rem; }
 body { @apply bg-canvas text-ink; min-width: 320px; font-family: 'Manrope Variable', Manrope, sans-serif; overflow-x: hidden; }
 button, input, select, textarea { font: inherit; }
-::selection { background: #FFD468; color: #1B1B19; }
+::selection { background: var(--color-yellow); color: var(--color-ink-dark); }
 .font-display { font-family: 'Barlow Condensed', Impact, sans-serif; letter-spacing: -0.025em; }
 .display-title { font-family: 'Barlow Condensed', Impact, sans-serif; font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; line-height: .96; }
 .kicker { font-size: .75rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
-.neo-shadow { box-shadow: 0 3px 0 #111; }
-.pattern-diagonal { background-image: repeating-linear-gradient(135deg, rgba(27,27,25,.13) 0 1px, transparent 1px 8px); }
-.pattern-dots { background-image: radial-gradient(rgba(27,27,25,.18) 1px, transparent 1px); background-size: 9px 9px; }
-.pattern-radial { background-image: repeating-radial-gradient(circle at 74% 20%, rgba(27,27,25,.13) 0 1px, transparent 1px 18px); }
-.scrollbar-subtle { scrollbar-width: thin; scrollbar-color: #484540 transparent; }
+.neo-shadow { box-shadow: 0 3px 0 #081C1E; }
+.pattern-diagonal { background-image: repeating-linear-gradient(135deg, rgba(16,40,43,.13) 0 1px, transparent 1px 8px); }
+.pattern-dots { background-image: radial-gradient(rgba(16,40,43,.18) 1px, transparent 1px); background-size: 9px 9px; }
+.pattern-radial { background-image: repeating-radial-gradient(circle at 74% 20%, rgba(16,40,43,.13) 0 1px, transparent 1px 18px); }
+.scrollbar-subtle { scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
 .scrollbar-subtle::-webkit-scrollbar { width: 7px; height: 7px; }
-.scrollbar-subtle::-webkit-scrollbar-thumb { background: #484540; border-radius: 999px; }
-.focus-ring:focus-visible { outline: 3px solid #FFD468; outline-offset: 3px; }
+.scrollbar-subtle::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 999px; }
+.focus-ring:focus-visible { outline: 3px solid var(--color-yellow); outline-offset: 3px; }
 .text-balance { text-wrap: balance; }
 @keyframes surface-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes surface-fade-out { from { opacity: 1; } to { opacity: 0; } }
@@ -58,7 +67,7 @@ button, input, select, textarea { font: inherit; }
 @keyframes landing-float-soft-alt { 0%, 100% { transform: rotate(4deg) translateY(0); } 50% { transform: rotate(4deg) translateY(-6px); } }
 @keyframes landing-phone-enter { from { opacity: .86; transform: translateY(28px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes landing-hero-enter { from { opacity: .78; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes landing-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(72,184,138,.5); } 50% { box-shadow: 0 0 0 7px rgba(72,184,138,0); } }
+@keyframes landing-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(118,208,173,.5); } 50% { box-shadow: 0 0 0 7px rgba(118,208,173,0); } }
 @keyframes landing-grow { from { transform: scaleX(.35); transform-origin: left; } to { transform: scaleX(1); transform-origin: left; } }
 @keyframes landing-bar-rise { from { transform: scaleY(.25); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
 @keyframes landing-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -73,7 +82,7 @@ button, input, select, textarea { font: inherit; }
 .landing-mini-bar, .landing-chart-bar { animation: landing-bar-rise .55s cubic-bezier(.22,1,.36,1) both; }
 .landing-marquee { animation: landing-marquee 24s linear infinite; }
 .landing-hover-card { transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease; }
-.landing-hover-card:hover { transform: translateY(-4px) rotate(.25deg); box-shadow: 0 6px 0 #111; }
+.landing-hover-card:hover { transform: translateY(-4px) rotate(.25deg); box-shadow: 0 6px 0 #081C1E; }
 @keyframes landing-reveal-in { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
 .reveal { opacity: 0; will-change: opacity, transform; }
 .reveal.is-revealed { animation: landing-reveal-in .72s cubic-bezier(.22,1,.36,1) both; animation-delay: var(--reveal-delay, 0s); will-change: auto; }

@@ -17,7 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <MotionConfig reducedMotion="user">
       <QueryClientProvider client={queryClient}>
         <App />
-        <Toaster position="top-right" toastOptions={{ style: { background: '#343230', color: '#F7F3EA', border: '1px solid #484540', borderRadius: '18px', boxShadow: '0 3px 0 #111' } }} />
+        <Toaster position="top-right" toastOptions={{ style: { background: 'var(--color-surface-raised)', color: 'var(--color-ink)', border: '1px solid var(--color-border)', borderRadius: '18px', boxShadow: '0 3px 0 #081C1E' } }} />
       </QueryClientProvider>
     </MotionConfig>
   </StrictMode>,

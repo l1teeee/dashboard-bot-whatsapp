@@ -448,7 +448,7 @@ function FeaturesSection() {
 
           return (
             <Reveal key={title} delay={index * 0.09} className={span}>
-              <article className={`relative flex h-full min-h-64 flex-col overflow-hidden rounded-[26px] border-2 border-ink-dark p-5 neo-shadow transition duration-300 hover:-translate-y-1 hover:shadow-[0_7px_0_#111] sm:p-6 ${tone}`}>
+              <article className={`relative flex h-full min-h-64 flex-col overflow-hidden rounded-[26px] border-2 border-ink-dark p-5 neo-shadow transition duration-300 hover:-translate-y-1 hover:shadow-[0_7px_0_#081C1E] sm:p-6 ${tone}`}>
                 <div className="pattern-diagonal absolute inset-0 opacity-20" />
                 <div className="relative flex h-full flex-col">
                   {flip ? textBlock : iconRow}
@@ -482,7 +482,7 @@ function BenefitsSection() {
         <img
           src={heroLayers}
           alt="Capas organizadas que representan el flujo operativo"
-          className="relative w-[min(72vw,430px)] drop-shadow-[12px_16px_0_rgba(27,27,25,.2)] lg:w-[min(34vw,520px)]"
+          className="relative w-[min(72vw,430px)] drop-shadow-[12px_16px_0_rgba(16,40,43,.2)] lg:w-[min(34vw,520px)]"
         />
         <div className="absolute bottom-7 right-5 rotate-3 rounded-[20px] border-2 border-ink-dark bg-yellow px-5 py-4 neo-shadow sm:right-8">
           <p className="kicker">Una operación</p>
@@ -640,7 +640,7 @@ export function LandingPage() {
         <a href="#contenido" className="focus-ring fixed left-3 top-3 z-[100] -translate-y-24 rounded-full bg-yellow px-4 py-2 text-xs font-black text-ink-dark focus:translate-y-0">
           Saltar al contenido
         </a>
-        <div className="mx-auto w-full overflow-hidden bg-shell lg:max-w-[1480px] lg:rounded-[42px] lg:border-2 lg:border-ink-dark lg:shadow-[0_7px_0_#111]">
+        <div className="mx-auto w-full overflow-hidden bg-shell lg:max-w-[1480px] lg:rounded-[42px] lg:border-2 lg:border-ink-dark lg:shadow-[0_7px_0_#081C1E]">
           <LandingHeader />
           <main id="contenido" className="w-full">
             <HeroSection />
