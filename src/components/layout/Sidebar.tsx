@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useNavigate, NavLink } from 'react-router-dom';
-import { ChartNoAxesCombined, ChefHat, History, LayoutDashboard, LogOut, UtensilsCrossed, Settings } from 'lucide-react';
+import { CalendarClock, ChartNoAxesCombined, ChefHat, History, LayoutDashboard, LogOut, UtensilsCrossed, Settings } from 'lucide-react';
 import { SidebarNav } from '@/components/ui';
 import { useSidebarStore } from '@/store/sidebar';
 import { useOrders } from '@/hooks/useOrders';
+import { useReservations } from '@/hooks/useReservations';
 import { useAuthStore } from '@/store/auth';
 import { useMenuOverlayStore } from '@/store/menuOverlay';
 import { queryClient } from '@/api/queryClient';
@@ -17,7 +18,19 @@ export function Sidebar() {
   const { account } = useAuthStore();
   const resetMenuOverlay = useMenuOverlayStore((state) => state.reset);
   const { orders } = useOrders();
+  const { reservations } = useReservations();
   const pendingCount = useMemo(() => orders.filter((order) => order.status === 'pending').length, [orders]);
+  const pendingReservationsCount = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today.getTime() + 86400000);
+    return reservations.filter(
+      (reservation) =>
+        reservation.status === 'pending' &&
+        new Date(reservation.reserved_at) >= today &&
+        new Date(reservation.reserved_at) < tomorrow,
+    ).length;
+  }, [reservations]);
 
   const handleLogout = async () => {
     try {
@@ -35,6 +48,7 @@ export function Sidebar() {
   const items = [
     { id: 'dashboard', title: 'En vivo', icon: LayoutDashboard, to: '/dashboard', end: true, badge: pendingCount || undefined },
     { id: 'orders', title: 'Historial', icon: History, to: '/orders' },
+    { id: 'reservations', title: 'Reservas', icon: CalendarClock, to: '/reservations', badge: pendingReservationsCount || undefined },
     { id: 'analytics', title: 'Analíticas', icon: ChartNoAxesCombined, to: '/analytics' },
     { id: 'menu', title: 'Menú', icon: UtensilsCrossed, to: '/menu' },
   ];

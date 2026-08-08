@@ -31,3 +31,13 @@ export function formatPhone(phone: string): string {
   }
   return phone;
 }
+
+export function formatReservationDateTime(iso: string): string {
+  return new Intl.DateTimeFormat('es-SV', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(new Date(iso));
+}

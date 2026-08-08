@@ -14,6 +14,7 @@ const RegisterPage = lazy(() => import('@/pages/RegisterPage').then(({ RegisterP
 const AcceptInvitePage = lazy(() => import('@/pages/AcceptInvitePage').then(({ AcceptInvitePage }) => ({ default: AcceptInvitePage })));
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(({ DashboardPage }) => ({ default: DashboardPage })));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage').then(({ OrdersPage }) => ({ default: OrdersPage })));
+const ReservationsPage = lazy(() => import('@/pages/ReservationsPage').then(({ ReservationsPage }) => ({ default: ReservationsPage })));
 const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage').then(({ AnalyticsPage }) => ({ default: AnalyticsPage })));
 const MenuPage = lazy(() => import('@/pages/MenuPage').then(({ MenuPage }) => ({ default: MenuPage })));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(({ SettingsPage }) => ({ default: SettingsPage })));
@@ -74,6 +75,7 @@ function AppWithRehydration() {
       >
         <Route path="dashboard" element={<LazyRoute><DashboardPage /></LazyRoute>} />
         <Route path="orders" element={<LazyRoute><OrdersPage /></LazyRoute>} />
+        <Route path="reservations" element={<LazyRoute><ReservationsPage /></LazyRoute>} />
         <Route path="analytics" element={<LazyRoute><AnalyticsPage /></LazyRoute>} />
         <Route path="menu" element={<LazyRoute><MenuPage /></LazyRoute>} />
         <Route path="settings" element={<LazyRoute><SettingsPage /></LazyRoute>} />
