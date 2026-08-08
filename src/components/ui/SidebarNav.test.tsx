@@ -5,7 +5,7 @@ import { ChartNoAxesCombined, History, LayoutDashboard, UtensilsCrossed } from '
 import { SidebarNav } from './SidebarNav';
 
 const items = [
-  { id: 'live', title: 'En vivo', icon: LayoutDashboard, to: '/', end: true },
+  { id: 'live', title: 'En vivo', icon: LayoutDashboard, to: '/', end: true, badge: 2 },
   { id: 'orders', title: 'Historial', icon: History, to: '/orders' },
   { id: 'analytics', title: 'Analíticas', icon: ChartNoAxesCombined, to: '/analytics' },
   { id: 'menu', title: 'Menú', icon: UtensilsCrossed, to: '/menu' },
@@ -24,7 +24,14 @@ describe('SidebarNav', () => {
       </MemoryRouter>,
     );
 
-    for (const item of items) expect(screen.getByRole('link', { name: item.title })).toBeVisible();
+    for (const item of items) {
+      const link = screen.getByRole('link', { name: item.title });
+      expect(link).toBeVisible();
+      expect(link).toHaveClass('group', 'flex', 'min-h-11', 'text-ink');
+      expect(link.querySelector('span[aria-hidden="true"]')).toHaveClass('h-5', 'w-5', 'shrink-0');
+      expect(link.querySelector('svg')).toHaveClass('h-5', 'w-5');
+    }
+    expect(screen.getByRole('link', { name: 'En vivo' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Menú' })).toHaveAttribute('href', '/menu');
 
     fireEvent.click(screen.getByRole('link', { name: 'Historial' }));
