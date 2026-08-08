@@ -68,6 +68,7 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
   return (
     <>
       <KanbanBoard<Order>
+        className="lg:h-full lg:min-h-0"
         columns={columns}
         items={orders}
         getItemId={(o) => String(o.id)}

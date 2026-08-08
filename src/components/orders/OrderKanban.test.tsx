@@ -4,7 +4,7 @@ import { OrderKanban } from './OrderKanban';
 import type { Order } from '@/types/order';
 
 vi.mock('@/components/ui', () => ({
-  KanbanBoard: ({ items, onDrop }: { items: Order[]; onDrop: (order: Order, column: string) => void }) => <button onClick={() => onDrop(items[0], 'cancelled')}>Simular cancelación</button>,
+  KanbanBoard: ({ items, onDrop, className }: { items: Order[]; onDrop: (order: Order, column: string) => void; className?: string }) => <button className={className} onClick={() => onDrop(items[0], 'cancelled')}>Simular cancelación</button>,
   EmptyState: () => <div />,
   SkeletonCard: () => <div />,
 }));
@@ -31,7 +31,9 @@ describe('OrderKanban confirmation presence', () => {
   it('retains the cancellation payload while its dialog closes', () => {
     render(<OrderKanban orders={[order]} isLoading={false} onSelectOrder={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole('button', { name: /simular cancelación/i }));
+    const board = screen.getByRole('button', { name: /simular cancelación/i });
+    expect(board).toHaveClass('lg:h-full', 'lg:min-h-0');
+    fireEvent.click(board);
     const confirmation = screen.getByTestId('confirm-Cancelar pedido');
     expect(confirmation).toHaveAttribute('data-open', 'true');
     expect(confirmation).toHaveTextContent(/pedido #7/i);

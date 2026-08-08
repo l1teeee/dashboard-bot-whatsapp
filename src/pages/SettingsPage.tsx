@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { Copy, Trash2, Plus, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -14,11 +16,41 @@ import {
   updateMemberStatus,
 } from '@/api/auth';
 import { fadeUp, staggerContainer } from '@/lib/motion';
+import { GoogleCalendarCard } from '@/components/settings/GoogleCalendarCard';
+import { queryKeys } from '@/lib/queryKeys';
 
 export function SettingsPage() {
   const { account, tenant } = useAuthStore();
   const queryClient = useQueryClient();
   const isOwner = account?.role === 'owner';
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle Google integration callback
+  useEffect(() => {
+    const googleParam = searchParams.get('google');
+    if (googleParam === 'connected') {
+      toast.success('Google Calendar conectado exitosamente');
+      queryClient.invalidateQueries({ queryKey: queryKeys.googleIntegration() });
+      clearGoogleParams();
+    } else if (googleParam === 'error') {
+      const reason = searchParams.get('reason');
+      const reasonText =
+        reason === 'auth_failed'
+          ? 'La autorizacion de Google fue rechazada'
+          : 'Hubo un error al conectar Google Calendar';
+      toast.error(reasonText);
+      clearGoogleParams();
+    }
+
+    // Se borran solo las dos claves de Google: vaciar la query entera se llevaria
+    // por delante cualquier otro parametro que traiga la pagina.
+    function clearGoogleParams() {
+      const next = new URLSearchParams(searchParams);
+      next.delete('google');
+      next.delete('reason');
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams, queryClient]);
 
   // Settings Query
   const { data: settings } = useQuery({
@@ -128,6 +160,11 @@ export function SettingsPage() {
           onSubmit={(data) => passwordMutation.mutate(data)}
         />
       </motion.section>
+
+      {/* Google Calendar */}
+      <motion.div variants={fadeUp}>
+        <GoogleCalendarCard />
+      </motion.div>
 
       {/* Team Management */}
       {isOwner && (

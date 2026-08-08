@@ -136,7 +136,7 @@ export function KanbanBoard<TItem>({
     const handleAutoScroll = () => {
       if (!dragState) return;
 
-      const scrollContainer = columnElement.querySelector('.overflow-y-auto') as HTMLElement;
+      const scrollContainer = columnElement.querySelector('[data-kanban-scroll-region]') as HTMLElement;
       if (!scrollContainer) return;
 
       const rect = scrollContainer.getBoundingClientRect();
@@ -371,7 +371,7 @@ export function KanbanBoard<TItem>({
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className={cn('grid auto-cols-[84vw] grid-flow-col gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-subtle md:grid-flow-row md:grid-cols-2 md:auto-cols-auto xl:grid-cols-4', className)}
+        className={cn('relative grid auto-cols-[84vw] grid-flow-col items-start gap-4 overflow-x-auto pb-2 snap-x snap-mandatory scrollbar-subtle md:grid-flow-row md:grid-cols-2 md:auto-cols-auto lg:grid-flow-col lg:grid-cols-none lg:auto-cols-[minmax(17rem,1fr)] lg:items-stretch lg:overflow-y-hidden 2xl:grid-flow-row 2xl:grid-cols-4 2xl:auto-cols-auto 2xl:grid-rows-[minmax(0,1fr)]', className)}
       >
         <AnimatePresence initial={false}>
           {draggedItemId !== null && onDeleteDrop && (
@@ -381,7 +381,7 @@ export function KanbanBoard<TItem>({
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="col-span-full"
+            className="col-span-full lg:absolute lg:inset-x-0 lg:top-0 lg:z-30 lg:px-2"
           >
             <div
               data-kanban-delete-zone="true"
@@ -425,14 +425,14 @@ export function KanbanBoard<TItem>({
               layout
               variants={softScale}
               className={cn(
-                'min-h-[420px] snap-start bg-surface border border-border rounded-[24px] flex flex-col overflow-hidden',
+                'min-h-[420px] snap-start bg-surface border border-border rounded-[24px] flex flex-col overflow-hidden lg:h-full lg:min-h-0',
                 column.accentClass || 'border-t-4 border-t-pending',
                 isValidDropTarget && 'ring-2 ring-brand ring-offset-2 border-dashed',
                 isInvalidDropTarget && 'opacity-40 cursor-not-allowed',
                 'transition-all',
               )}
             >
-              <div className="sticky top-0 bg-surface px-4 py-3 border-b border-border flex items-center justify-between z-10">
+              <div className="sticky top-0 z-10 flex shrink-0 items-center justify-between border-b border-border bg-surface px-4 py-3">
                 <div className="flex items-center gap-3">
                   <div
                     className={cn(
@@ -447,7 +447,13 @@ export function KanbanBoard<TItem>({
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3 min-h-[200px]">
+              <div
+                data-kanban-scroll-region="true"
+                role="region"
+                tabIndex={0}
+                aria-label={`${column.title}: ${columnItems.length} ${columnItems.length === 1 ? 'pedido' : 'pedidos'}`}
+                className="flex min-h-[200px] flex-1 flex-col gap-3 overflow-y-auto overscroll-contain p-3 scrollbar-subtle lg:min-h-0 lg:[scrollbar-gutter:stable]"
+              >
                 {isLoading ? (
                   <>
                     {renderSkeleton?.()}

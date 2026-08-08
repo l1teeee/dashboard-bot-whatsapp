@@ -41,5 +41,12 @@ describe('DashboardPage', () => {
 
     expect(screen.getByTestId('order-kanban')).toBeInTheDocument();
     expect(screen.queryByText(/resumen operativo/i)).not.toBeInTheDocument();
+
+    const pageTitle = screen.getByRole('heading', { level: 1, name: /operación en vivo/i });
+    expect(pageTitle).toHaveClass('text-[clamp(1.9rem,3vw,2.75rem)]');
+
+    const liveRegion = screen.getByRole('region', { name: /operación en vivo/i });
+    expect(liveRegion).toHaveClass('lg:min-h-0', 'lg:flex-1', 'lg:overflow-hidden');
+    expect(screen.getByRole('heading', { level: 2, name: /operación en vivo/i })).toHaveClass('text-2xl');
   });
 });
