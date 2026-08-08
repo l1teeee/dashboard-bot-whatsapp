@@ -17,7 +17,7 @@ import {
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import heroLayers from '@/assets/hero.png';
+import orderWorkflowIllustration from '@/assets/order-workflow.webp';
 import {
   DashboardMarketingPreview,
   HeroOperationsPreview,
@@ -473,15 +473,15 @@ function BenefitsSection() {
   ];
 
   return (
-    <section className="grid w-full bg-warm text-ink-dark lg:grid-cols-2" aria-labelledby="benefits-title">
+    <section id="beneficios" className="grid w-full bg-warm text-ink-dark lg:grid-cols-2" aria-labelledby="benefits-title">
       <div className="relative flex min-h-[480px] items-center justify-center overflow-hidden border-b border-ink-dark bg-lilac p-8 lg:min-h-[680px] lg:border-b-0 lg:border-r">
         <div className="pattern-radial absolute inset-0 opacity-35" />
         <div className="absolute left-6 top-6 rounded-full border border-ink-dark bg-warm px-4 py-2 text-[11px] font-black uppercase tracking-[.13em] neo-shadow">
           Creado para el ritmo real
         </div>
         <img
-          src={heroLayers}
-          alt="Capas organizadas que representan el flujo operativo"
+          src={orderWorkflowIllustration}
+          alt="Flujo de pedidos organizado en etapas, desde la recepción hasta completar la orden"
           className="relative w-[min(72vw,430px)] drop-shadow-[12px_16px_0_rgba(16,40,43,.2)] lg:w-[min(34vw,520px)]"
         />
         <div className="absolute bottom-7 right-5 rotate-3 rounded-[20px] border-2 border-ink-dark bg-yellow px-5 py-4 neo-shadow sm:right-8">
