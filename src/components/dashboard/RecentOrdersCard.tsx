@@ -1,6 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
 import { StatusBadge } from '@/components/orders/StatusBadge';
 import { formatCurrency, formatPhone } from '@/lib/format';
+import { formatOrderNumber } from '@/components/orders/orderNumber';
 import type { Order } from '@/types/order';
 
 export function RecentOrdersCard({ orders, onSelect }: { orders: Order[]; onSelect: (id: number) => void }) {
@@ -16,7 +17,7 @@ export function RecentOrdersCard({ orders, onSelect }: { orders: Order[]; onSele
       <div className="scrollbar-subtle mt-4 min-h-0 flex-1 divide-y divide-border overflow-y-auto">
         {orders.length ? orders.map((order) => (
           <button key={order.id} onClick={() => onSelect(order.id)} className="focus-ring flex w-full items-center gap-2 py-3 text-left">
-            <span className="font-display text-xl font-bold">#{order.id}</span>
+            <span className="font-display text-xl font-bold">{formatOrderNumber(order)}</span>
             <span className="min-w-0 flex-1 truncate text-xs text-ink-soft">{formatPhone(order.phone_number)}</span>
             <StatusBadge status={order.status} size="sm" />
             <span className="hidden text-sm font-bold sm:inline">{formatCurrency(order.total)}</span>

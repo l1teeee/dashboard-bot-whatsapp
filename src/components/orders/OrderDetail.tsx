@@ -6,6 +6,7 @@ import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus';
 import { ORDER_STATUS_TRANSITIONS, type OrderStatusUpdate } from '@/types/order';
 import { STATUS_META } from '@/lib/orderStatus';
 import { formatCurrency, formatDateTime, formatPhone } from '@/lib/format';
+import { formatOrderNumber } from './orderNumber';
 import { cn } from '@/lib/cn';
 
 export function OrderDetail({ orderId, onClose }: { orderId: number | null; onClose: () => void }) {
@@ -40,7 +41,7 @@ export function OrderDetail({ orderId, onClose }: { orderId: number | null; onCl
     </div>
   ) : undefined;
 
-  return <Modal open={isOpen} onClose={onClose} title={order ? `Pedido #${order.id}` : displayedOrderId ? `Pedido #${displayedOrderId}` : 'Detalle de pedido'} size="lg" footer={footer}>
+  return <Modal open={isOpen} onClose={onClose} title={order ? `Pedido ${formatOrderNumber(order)}` : displayedOrderId ? `Pedido #${displayedOrderId}` : 'Detalle de pedido'} size="lg" footer={footer}>
     {isLoading && <div className="space-y-4"><Skeleton className="h-12" /><Skeleton className="h-40" /></div>}
     {isError && <ErrorState message={error?.message || 'Error al cargar el pedido'} onRetry={() => refetch()} />}
     {order && <div className="min-w-0 space-y-6">
@@ -54,6 +55,6 @@ export function OrderDetail({ orderId, onClose }: { orderId: number | null; onCl
       </div>
       {terminal ? <p className="rounded-xl bg-surface p-3 text-sm text-ink-soft">Este pedido está en un estado final.</p> : <div className="border-t border-border pt-5"><Textarea label="Notas del cambio (opcional)" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Agrega contexto para el equipo..." /></div>}
     </div>}
-    <ConfirmDialog open={isConfirmOpen} title={`Cambiar a ${STATUS_META[confirmTarget].label}`} description={`Cambiar el estado del pedido #${displayedOrderId ?? ''}?`} confirmLabel={STATUS_META[confirmTarget].actionLabel} tone={confirmTarget === 'cancelled' ? 'danger' : 'default'} isLoading={update.isPending} onConfirm={() => { if (displayedOrderId === null) return; update.mutate({ id: displayedOrderId, status: confirmTarget, notes: notes || undefined }); setNotes(''); setConfirmOpen(false); }} onCancel={() => setConfirmOpen(false)} />
+    <ConfirmDialog open={isConfirmOpen} title={`Cambiar a ${STATUS_META[confirmTarget].label}`} description={`Cambiar el estado del pedido ${order ? formatOrderNumber(order) : displayedOrderId ? `#${displayedOrderId}` : ''}?`} confirmLabel={STATUS_META[confirmTarget].actionLabel} tone={confirmTarget === 'cancelled' ? 'danger' : 'default'} isLoading={update.isPending} onConfirm={() => { if (displayedOrderId === null) return; update.mutate({ id: displayedOrderId, status: confirmTarget, notes: notes || undefined }); setNotes(''); setConfirmOpen(false); }} onCancel={() => setConfirmOpen(false)} />
   </Modal>;
 }

@@ -2,6 +2,7 @@
 import { updateOrderStatus } from '@/api/orders';
 import { queryKeys } from '@/lib/queryKeys';
 import { STATUS_META } from '@/lib/orderStatus';
+import { formatOrderNumber } from '@/components/orders/orderNumber';
 import type { OrderStatusUpdate } from '@/types/order';
 import { ApiError, NetworkError } from '@/types/api';
 import toast from 'react-hot-toast';
@@ -15,7 +16,7 @@ export function useUpdateOrderStatus() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: queryKeys.order(updated.id) });
-      toast.success(`Pedido #${updated.id}: ${STATUS_META[updated.status].label}`);
+      toast.success(`Pedido ${formatOrderNumber(updated)}: ${STATUS_META[updated.status].label}`);
     },
     onError: (error) => {
       let message = 'Error al actualizar el pedido';

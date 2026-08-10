@@ -26,6 +26,8 @@ export interface Order {
   created_at: string;
   updated_at: string;
   position: number;
+  business_day: string | null;
+  daily_number: number | null;
 }
 
 export interface OrderLog {
@@ -52,4 +54,12 @@ export interface OrdersQuery {
   phone_number?: string;
   limit?: number;
   offset?: number;
+}
+
+export interface BusinessDay {
+  business_day: string;
+  order_count: number;
+  total_revenue: number;
+  closed_at: string | null;
+  already_closed?: boolean;
 }

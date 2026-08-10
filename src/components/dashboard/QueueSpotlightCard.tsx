@@ -1,5 +1,6 @@
 import { ArrowUpRight, Clock3 } from 'lucide-react';
 import { formatCurrency, formatRelativeTime } from '@/lib/format';
+import { formatOrderNumber } from '@/components/orders/orderNumber';
 import type { Order } from '@/types/order';
 
 export function QueueSpotlightCard({ order, onSelect }: { order?: Order; onSelect: (id: number) => void }) {
@@ -17,7 +18,7 @@ export function QueueSpotlightCard({ order, onSelect }: { order?: Order; onSelec
         </div>
         {order ? (
           <>
-            <p className="font-display mt-6 text-5xl font-bold">#{order.id}</p>
+            <p className="font-display mt-6 text-5xl font-bold">{formatOrderNumber(order)}</p>
             <p className="mt-1 text-sm font-bold">Pendiente {formatRelativeTime(order.created_at)}</p>
             <p className="mt-auto line-clamp-2 text-xs font-semibold">
               {order.items.map((item) => `${item.quantity}× ${item.name}`).join(' · ')}

@@ -1,5 +1,5 @@
 ﻿import { request } from './client';
-import type { Order, OrderWithLogs, PaginatedOrders, OrdersQuery, OrderStatusUpdate } from '@/types/order';
+import type { Order, OrderWithLogs, PaginatedOrders, OrdersQuery, OrderStatusUpdate, BusinessDay } from '@/types/order';
 
 export async function getOrders(query?: OrdersQuery): Promise<PaginatedOrders> {
   return request<PaginatedOrders>('/api/orders', { params: query as Record<string, string | number | undefined> });
@@ -29,5 +29,15 @@ export async function updateOrderPosition(id: number, position: number): Promise
 export async function deleteOrder(id: number): Promise<{ id: number; deleted: true }> {
   return request<{ id: number; deleted: true }>(`/api/orders/${id}`, {
     method: 'DELETE',
+  });
+}
+
+export async function getBusinessDay(): Promise<BusinessDay> {
+  return request<BusinessDay>('/api/orders/business-day');
+}
+
+export async function closeBusinessDay(): Promise<BusinessDay> {
+  return request<BusinessDay>('/api/orders/business-day/close', {
+    method: 'POST',
   });
 }

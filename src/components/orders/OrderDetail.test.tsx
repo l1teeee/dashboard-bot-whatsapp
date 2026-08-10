@@ -29,6 +29,8 @@ const order: OrderWithLogs = {
   logs: [],
   created_at: '2026-08-01T12:00:00Z',
   updated_at: '2026-08-01T12:00:00Z',
+  business_day: null,
+  daily_number: null,
 };
 
 describe('OrderDetail presence', () => {

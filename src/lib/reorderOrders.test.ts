@@ -5,6 +5,7 @@ import type { Order } from '@/types/order';
 const order = (id: number, position: number, status: Order['status'] = 'pending'): Order => ({
   id, position, status, total: 1, phone_number: '5037000000', items: [], notes: null,
   created_at: '2026-08-01T12:00:00Z', updated_at: '2026-08-01T12:00:00Z',
+  business_day: null, daily_number: null,
 });
 
 describe('reorderOrdersInStatus', () => {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { KanbanBoard } from '@/components/ui';
 import { OrderCard } from './OrderCard';
+import { formatOrderNumber } from './orderNumber';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useMoveOrderStatus } from '@/hooks/useMoveOrderStatus';
 import { useReorderOrder } from '@/hooks/useReorderOrder';
@@ -97,7 +98,7 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
       <ConfirmDialog
         open={isMoveConfirmOpen}
         title="Cancelar pedido"
-        description={pendingMove ? `El pedido #${pendingMove.order.id} sera cancelado. Esta accion no se puede deshacer.` : 'Confirma la cancelación del pedido.'}
+        description={pendingMove ? `El pedido ${formatOrderNumber(pendingMove.order)} sera cancelado. Esta accion no se puede deshacer.` : 'Confirma la cancelación del pedido.'}
         confirmLabel="Cancelar pedido"
         tone="danger"
         onConfirm={handleConfirmCancel}
@@ -106,7 +107,7 @@ export function OrderKanban({ orders, isLoading, onSelectOrder }: OrderKanbanPro
       <ConfirmDialog
         open={isDeleteConfirmOpen}
         title="Eliminar pedido"
-        description={pendingDelete ? `El pedido #${pendingDelete.id} se eliminara de forma permanente.` : 'Confirma la eliminación del pedido.'}
+        description={pendingDelete ? `El pedido ${formatOrderNumber(pendingDelete)} se eliminara de forma permanente.` : 'Confirma la eliminación del pedido.'}
         confirmLabel="Eliminar pedido"
         tone="danger"
         onConfirm={() => { if (pendingDelete) deleteOrder({ id: pendingDelete.id }); setDeleteConfirmOpen(false); }}

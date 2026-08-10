@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { OrdersTable } from './OrdersTable';
 import type { Order } from '@/types/order';
 
-const order: Order = { id: 7, status: 'processing', position: 0, total: 8.5, phone_number: '+503 7000-1234', items: [{ menu_item_id: 1, name: 'Pupusa', quantity: 2, unit_price: 4.25 }], notes: null, created_at: '2026-08-01T12:00:00Z', updated_at: '2026-08-01T12:00:00Z' };
+const order: Order = { id: 7, status: 'processing', position: 0, total: 8.5, phone_number: '+503 7000-1234', items: [{ menu_item_id: 1, name: 'Pupusa', quantity: 2, unit_price: 4.25 }], notes: null, created_at: '2026-08-01T12:00:00Z', updated_at: '2026-08-01T12:00:00Z', business_day: null, daily_number: null };
 
 describe('OrdersTable', () => {
   it('keeps status in its own column and opens a row through its detail action', () => {

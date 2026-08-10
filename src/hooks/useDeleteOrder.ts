@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteOrder } from '@/api/orders';
 import { queryKeys } from '@/lib/queryKeys';
+import { formatOrderNumber } from '@/components/orders/orderNumber';
 import type { OrderWithLogs, PaginatedOrders } from '@/types/order';
 import { ApiError, NetworkError } from '@/types/api';
 import toast from 'react-hot-toast';
@@ -28,7 +29,8 @@ export function useDeleteOrder() {
         });
       }
       queryClient.removeQueries({ queryKey: detailKey, exact: true });
-      return { previous, previousDetail };
+      const deleted = previous?.orders.find((order) => order.id === id);
+      return { previous, previousDetail, deleted };
     },
     onError: (error, vars, context) => {
       const detailKey = queryKeys.order(vars.id);
@@ -38,9 +40,10 @@ export function useDeleteOrder() {
       toast.error(message);
       queryClient.invalidateQueries({ queryKey: detailKey });
     },
-    onSuccess: (_data, vars) => {
+    onSuccess: (_data, vars, context) => {
       queryClient.removeQueries({ queryKey: queryKeys.order(vars.id), exact: true });
-      toast.success(`Pedido #${vars.id} eliminado`);
+      const label = context?.deleted ? formatOrderNumber(context.deleted) : `#${vars.id}`;
+      toast.success(`Pedido ${label} eliminado`);
     },
     onSettled: (_data, _error, vars) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });

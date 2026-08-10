@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Button, ConfirmDialog } from '@/components/ui';
 import { STATUS_META } from '@/lib/orderStatus';
 import { useUpdateOrderStatus } from '@/hooks/useUpdateOrderStatus';
-import type { OrderStatusUpdate } from '@/types/order';
+import { formatOrderNumber } from './orderNumber';
+import type { Order, OrderStatusUpdate } from '@/types/order';
 
 interface StatusChangeButtonProps {
   orderId: number;
+  orderNumber?: Pick<Order, 'id' | 'daily_number'>;
   target: OrderStatusUpdate;
   size?: 'sm' | 'md' | 'lg';
   fullWidth?: boolean;
@@ -13,6 +15,7 @@ interface StatusChangeButtonProps {
 
 export function StatusChangeButton({
   orderId,
+  orderNumber,
   target,
   size = 'md',
   fullWidth,
@@ -48,7 +51,7 @@ export function StatusChangeButton({
       </Button>
       <ConfirmDialog
         open={open}
-        title={`Cambiar estado del pedido #${orderId}`}
+        title={`Cambiar estado del pedido ${orderNumber ? formatOrderNumber(orderNumber) : `#${orderId}`}`}
         description={`Cambiar a ${targetMeta.label}?`}
         confirmLabel={targetMeta.actionLabel}
         tone={target === 'cancelled' ? 'danger' : 'default'}

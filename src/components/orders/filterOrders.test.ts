@@ -21,6 +21,8 @@ const makeOrder = (id: number, created_at: string): Order => ({
   phone_number: '+503 7000-0000',
   items: [],
   notes: null,
+  business_day: null,
+  daily_number: null,
 });
 
 describe('local order date filters', () => {
