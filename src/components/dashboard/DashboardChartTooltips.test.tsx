@@ -80,6 +80,7 @@ describe('tooltips de las gráficas del dashboard', () => {
     expect(yAxisProps.domain).toEqual([0, 1]);
     expect(barProps).toMatchObject({ fill: 'var(--color-warm)', isAnimationActive: false });
     expect(screen.getByText('Ingresos completados').closest('section')).toHaveClass('bg-cyan', 'h-full');
+    expect(screen.getByLabelText('Ingresos completados por día')).toHaveClass('min-h-0', 'flex-1');
     expect(screen.getByText(`SÁB: ${formatCurrency(0)}`)).toBeInTheDocument();
   });
 
@@ -103,6 +104,7 @@ describe('tooltips de las gráficas del dashboard', () => {
     expect(yAxisProps.domain).toEqual([0, 1]);
     expect(areaProps).toMatchObject({ stroke: 'var(--color-ink-dark)', isAnimationActive: false });
     expect(screen.getByText('Flujo de pedidos').closest('section')).toHaveClass('h-full');
+    expect(screen.getByLabelText('Pedidos diarios')).toHaveClass('min-h-0', 'flex-1');
     expect(screen.getByText('SÁB: 0 pedidos')).toBeInTheDocument();
   });
 });

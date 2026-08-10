@@ -17,6 +17,7 @@ describe('AnalyticsPage', () => {
   it('keeps the operational metrics in their own route', () => {
     render(<AnalyticsPage />);
     expect(screen.getByRole('heading', { name: /resumen operativo/i })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: /secciones de analíticas/i })).toBeInTheDocument();
     expect(screen.getByTestId('dashboard-bento')).toBeInTheDocument();
   });
 

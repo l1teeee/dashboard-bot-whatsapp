@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/cn';
 import { Sidebar } from './Sidebar';
 import { ConnectionBanner } from './ConnectionBanner';
@@ -12,7 +12,6 @@ export function AppLayout() {
   const isLiveDashboard = location.pathname === '/dashboard';
   const transition = reducedMotion ? { duration: 0 } : { duration: 0.18, ease: [0.22, 1, 0.36, 1] as const };
   const initial = reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 };
-  const exit = reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -5 };
 
   return (
     <div className="min-h-dvh bg-canvas p-0 lg:h-dvh lg:min-h-0 lg:overflow-hidden lg:p-5">
@@ -30,22 +29,19 @@ export function AppLayout() {
                 : 'lg:overflow-y-auto lg:scrollbar-subtle',
             )}
           >
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                key={location.pathname}
-                data-testid="route-transition"
-                initial={initial}
-                animate={{ opacity: 1, y: 0 }}
-                exit={exit}
-                transition={transition}
-                className={cn(
-                  'w-full',
-                  isLiveDashboard && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden',
-                )}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
+            <motion.div
+              key={location.pathname}
+              data-testid="route-transition"
+              initial={initial}
+              animate={{ opacity: 1, y: 0 }}
+              transition={transition}
+              className={cn(
+                'w-full',
+                isLiveDashboard && 'lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden',
+              )}
+            >
+              <Outlet />
+            </motion.div>
           </main>
         </div>
       </div>

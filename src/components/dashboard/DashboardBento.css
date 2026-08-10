@@ -1,0 +1,156 @@
+.dashboard-layout-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+  padding: 0.8rem;
+  color: var(--color-ink);
+  box-shadow: 0 4px 16px rgb(0 24 28 / 8%);
+}
+
+.dashboard-layout-toolbar-active {
+  border-color: color-mix(in srgb, var(--color-lilac) 72%, var(--color-border));
+  background: color-mix(in srgb, var(--color-brand-soft) 34%, var(--color-surface));
+}
+
+.dashboard-layout-toolbar-title {
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+
+.dashboard-layout-toolbar-active .dashboard-layout-toolbar-title::before {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-lilac);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-lilac) 22%, transparent);
+  content: '';
+}
+
+.dashboard-layout-toolbar-copy {
+  margin-top: 0.125rem;
+  color: var(--color-ink-soft);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.dashboard-widget-grid {
+  min-height: 44rem;
+}
+
+.dashboard-widget-grid-editing {
+  /* El alto adicional deja al menos tres filas vacias para reubicar tarjetas. */
+  min-height: 58rem;
+  border: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+  border-radius: 1.75rem;
+  background-color: color-mix(in srgb, var(--color-shell) 70%, transparent);
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--color-border) 48%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--color-border) 48%, transparent) 1px, transparent 1px);
+  background-position: -1px -1px;
+  background-size: calc((100% + 20px) / 12) 44px;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%);
+}
+
+.dashboard-widget-grid-editing .react-grid-placeholder {
+  border: 2px dashed var(--color-lilac) !important;
+  border-radius: 1.5rem !important;
+  background: color-mix(in srgb, var(--color-lilac) 28%, transparent) !important;
+  opacity: 1 !important;
+}
+
+.dashboard-widget-frame {
+  height: 100%;
+}
+
+.dashboard-widget-frame-editing {
+  cursor: grab;
+  outline: 1px solid color-mix(in srgb, var(--color-ink) 34%, transparent);
+  outline-offset: 3px;
+  border-radius: 1.75rem;
+  transition: outline-color 160ms ease, box-shadow 160ms ease;
+}
+
+.dashboard-widget-frame-editing:focus-visible,
+.dashboard-widget-frame-selected {
+  outline: 3px solid var(--color-lilac);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-lilac) 18%, transparent);
+}
+
+.dashboard-widget-grid-editing .react-grid-item.react-draggable-dragging .dashboard-widget-frame-editing {
+  cursor: grabbing;
+  box-shadow: 0 18px 34px rgb(0 18 22 / 30%);
+}
+
+.dashboard-widget-content[inert] {
+  pointer-events: none;
+  user-select: none;
+}
+
+.dashboard-resize-handle {
+  position: absolute;
+  z-index: 30;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  touch-action: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.dashboard-widget-grid-editing .dashboard-resize-handle {
+  /* Son los nodos reales que react-resizable controla; nunca son decorativos. */
+  opacity: 0.72;
+  pointer-events: auto;
+}
+
+.dashboard-widget-frame-selected .dashboard-resize-handle,
+.dashboard-widget-frame-editing:hover .dashboard-resize-handle {
+  opacity: 1;
+}
+
+.dashboard-resize-handle-dot {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--color-shell);
+  border-radius: 999px;
+  background: var(--color-lilac);
+  box-shadow: 0 2px 8px rgb(0 18 22 / 35%);
+}
+
+.dashboard-resize-handle:hover .dashboard-resize-handle-dot,
+.dashboard-resize-handle:active .dashboard-resize-handle-dot {
+  transform: scale(1.2);
+}
+
+.dashboard-resize-handle-n { top: -22px; left: calc(50% - 22px); cursor: ns-resize; }
+.dashboard-resize-handle-e { top: calc(50% - 22px); right: -22px; cursor: ew-resize; }
+.dashboard-resize-handle-s { bottom: -22px; left: calc(50% - 22px); cursor: ns-resize; }
+.dashboard-resize-handle-w { top: calc(50% - 22px); left: -22px; cursor: ew-resize; }
+
+.dashboard-widget-size {
+  position: absolute;
+  z-index: 31;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-shell);
+  padding: 0.2rem 0.5rem;
+  color: var(--color-ink);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+@media (max-width: 640px) {
+  .dashboard-layout-toolbar { align-items: flex-start; }
+}

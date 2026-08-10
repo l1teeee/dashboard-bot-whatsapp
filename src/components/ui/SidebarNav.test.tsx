@@ -16,6 +16,17 @@ function LocationProbe() {
 }
 
 describe('SidebarNav', () => {
+  it('uses the themed scrollbar for the scrollable navigation region', () => {
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <SidebarNav groups={[{ heading: 'Control', items }]} header={<span>Logo</span>} />
+      </MemoryRouter>,
+    );
+
+    const scrollRegion = screen.getByText('Control').parentElement?.parentElement;
+    expect(scrollRegion).toHaveClass('scrollbar-subtle', 'overflow-y-auto');
+  });
+
   it('keeps every route icon accessible and navigable while collapsed', () => {
     render(
       <MemoryRouter initialEntries={['/']}>

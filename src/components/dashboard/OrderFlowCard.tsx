@@ -38,7 +38,7 @@ export function OrderFlowCard({ data, active }: { data: DailyMetric[]; active: n
             <span className="text-[10px] font-bold uppercase">Activos ahora</span>
           </div>
         </div>
-        <div className="mt-5 min-h-40 flex-1" aria-label="Pedidos diarios">
+        <div className="mt-5 min-h-0 flex-1" aria-label="Pedidos diarios">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>

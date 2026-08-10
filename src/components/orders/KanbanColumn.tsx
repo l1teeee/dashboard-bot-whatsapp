@@ -28,7 +28,7 @@ export function KanbanColumn({ status, orders, onSelectOrder, isLoading }: Kanba
         </CardHeader>
       </Card>
 
-      <CardBody className="flex-1 overflow-y-auto space-y-3 mt-3">
+      <CardBody className="scrollbar-subtle flex-1 overflow-y-auto space-y-3 mt-3">
         {isLoading ? (
           <>
             <SkeletonCard />

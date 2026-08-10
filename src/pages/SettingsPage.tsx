@@ -123,43 +123,42 @@ export function SettingsPage() {
         />
       </motion.div>
 
-      {/* Restaurante Settings */}
-      <motion.section
+      {/* Ajustes principales: juntos en escritorio para evitar una página innecesariamente larga. */}
+      <motion.div
         variants={fadeUp}
-        className="rounded-[30px] border border-border bg-surface p-6 neo-shadow sm:p-8"
+        data-testid="primary-settings-grid"
+        className="grid items-start gap-5 xl:grid-cols-2"
       >
-        <div className="mb-6">
-          <p className="kicker text-yellow">Configuración</p>
-          <h3 className="font-display text-3xl font-bold uppercase">
-            Restaurante
-          </h3>
-        </div>
+        <section className="h-fit rounded-[30px] border border-border bg-surface p-5 neo-shadow sm:p-6">
+          <div className="mb-5">
+            <p className="kicker text-yellow">Configuración</p>
+            <h2 className="font-display text-3xl font-bold uppercase">
+              Restaurante
+            </h2>
+          </div>
 
-        <RestaurantForm
-          settings={settings}
-          loading={settingsMutation.isPending}
-          onSubmit={(data) => settingsMutation.mutate(data)}
-          isOwner={isOwner}
-        />
-      </motion.section>
+          <RestaurantForm
+            settings={settings}
+            loading={settingsMutation.isPending}
+            onSubmit={(data) => settingsMutation.mutate(data)}
+            isOwner={isOwner}
+          />
+        </section>
 
-      {/* Password Change */}
-      <motion.section
-        variants={fadeUp}
-        className="rounded-[30px] border border-border bg-surface p-6 neo-shadow sm:p-8"
-      >
-        <div className="mb-6">
-          <p className="kicker text-mint">Seguridad</p>
-          <h3 className="font-display text-3xl font-bold uppercase">
-            Cambiar contraseña
-          </h3>
-        </div>
+        <section className="h-fit rounded-[30px] border border-border bg-surface p-5 neo-shadow sm:p-6">
+          <div className="mb-5">
+            <p className="kicker text-mint">Seguridad</p>
+            <h2 className="font-display text-3xl font-bold uppercase">
+              Cambiar contraseña
+            </h2>
+          </div>
 
-        <PasswordForm
-          loading={passwordMutation.isPending}
-          onSubmit={(data) => passwordMutation.mutate(data)}
-        />
-      </motion.section>
+          <PasswordForm
+            loading={passwordMutation.isPending}
+            onSubmit={(data) => passwordMutation.mutate(data)}
+          />
+        </section>
+      </motion.div>
 
       {/* Google Calendar */}
       <motion.div variants={fadeUp}>
@@ -306,7 +305,7 @@ function RestaurantForm({
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
       <Input
         type="text"
         label="Nombre del restaurante"
@@ -401,7 +400,7 @@ function PasswordForm({
   }
 
   return (
-    <form className="space-y-5" onSubmit={handleSubmit}>
+    <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="relative">
         <Input
           type={showCurrentPassword ? 'text' : 'password'}

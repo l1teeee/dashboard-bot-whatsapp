@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { RequireAuth } from '@/components/layout/RequireAuth';
 import { PublicOnly } from '@/components/layout/PublicOnly';
 import { RouteFallback } from '@/components/layout/RouteFallback';
+import { RouteErrorBoundary } from '@/components/layout/RouteErrorBoundary';
 import { useAuthStore } from '@/store/auth';
 import { refresh } from '@/api/auth';
+import { isDefinitiveSessionRejection } from '@/api/client';
 
 const LoginPage = lazy(() => import('@/pages/LoginPage').then(({ LoginPage }) => ({ default: LoginPage })));
 const LandingPage = lazy(() => import('@/pages/LandingPage').then(({ LandingPage }) => ({ default: LandingPage })));
@@ -19,8 +21,14 @@ const AnalyticsPage = lazy(() => import('@/pages/AnalyticsPage').then(({ Analyti
 const MenuPage = lazy(() => import('@/pages/MenuPage').then(({ MenuPage }) => ({ default: MenuPage })));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(({ SettingsPage }) => ({ default: SettingsPage })));
 
-function LazyRoute({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<RouteFallback />}>{children}</Suspense>;
+function LazyRoute({ children, fallback = 'content' }: { children: ReactNode; fallback?: 'content' | 'public' }) {
+  const location = useLocation();
+
+  return (
+    <RouteErrorBoundary resetKey={location.pathname}>
+      <Suspense fallback={<RouteFallback variant={fallback} />}>{children}</Suspense>
+    </RouteErrorBoundary>
+  );
 }
 
 // Una ruta desconocida no debe expulsar de la sesion: con sesion activa
@@ -29,7 +37,7 @@ function NotFoundRedirect() {
   const { status } = useAuthStore();
 
   if (status === 'idle' || status === 'loading') {
-    return <RouteFallback />;
+    return <RouteFallback variant="shell" />;
   }
 
   return <Navigate to={status === 'authenticated' ? '/dashboard' : '/'} replace />;
@@ -45,26 +53,28 @@ function AppWithRehydration() {
         .then((sessionData) => {
           setSession(sessionData);
         })
-        .catch(() => {
-          setStatus('anonymous');
+        .catch((error) => {
+          setStatus(
+            isDefinitiveSessionRejection(error) ? 'anonymous' : 'unavailable',
+          );
         });
     }
   }, [status, setStatus, setSession]);
 
   return (
     <Routes>
-      <Route path="/" element={<LazyRoute><LandingPage /></LazyRoute>} />
+      <Route path="/" element={<LazyRoute fallback="public"><LandingPage /></LazyRoute>} />
       <Route
         path="/login"
-        element={<PublicOnly><LazyRoute><LoginPage /></LazyRoute></PublicOnly>}
+        element={<PublicOnly><LazyRoute fallback="public"><LoginPage /></LazyRoute></PublicOnly>}
       />
       <Route
         path="/register"
-        element={<PublicOnly><LazyRoute><RegisterPage /></LazyRoute></PublicOnly>}
+        element={<PublicOnly><LazyRoute fallback="public"><RegisterPage /></LazyRoute></PublicOnly>}
       />
       <Route
         path="/accept-invite"
-        element={<PublicOnly><LazyRoute><AcceptInvitePage /></LazyRoute></PublicOnly>}
+        element={<PublicOnly><LazyRoute fallback="public"><AcceptInvitePage /></LazyRoute></PublicOnly>}
       />
       <Route
         element={

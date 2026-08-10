@@ -42,7 +42,7 @@ export function RevenueOverviewCard({
           </div>
           <MetricCard className="min-w-44 bg-yellow" label="Ticket promedio" value={formatCurrency(averageTicket)} />
         </div>
-        <div className="mt-5 min-h-44 flex-1" aria-label="Ingresos completados por día">
+        <div className="mt-5 min-h-0 flex-1" aria-label="Ingresos completados por día">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
               <XAxis

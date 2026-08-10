@@ -1,4 +1,4 @@
-import { request } from './client';
+import { refreshAccessToken, request } from './client';
 import type { SessionData, RegistrationStatus, Settings } from '@/types/api';
 
 export async function getRegistrationStatus(): Promise<RegistrationStatus> {
@@ -29,9 +29,7 @@ export async function login(payload: {
 }
 
 export async function refresh(): Promise<SessionData> {
-  return request<SessionData>('/api/auth/refresh', {
-    method: 'POST',
-  });
+  return refreshAccessToken();
 }
 
 export async function logout(): Promise<{ logged_out: true }> {

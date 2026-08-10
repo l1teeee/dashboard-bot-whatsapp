@@ -39,7 +39,21 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--color-canvas); scroll-behavior: smooth; scroll-padding-top: 6rem; }
+html {
+  background: var(--color-canvas);
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+  /* Evita que el navegador use una barra clara al hacer scroll de la página. */
+  scrollbar-color: var(--color-brand-soft) var(--color-shell);
+  scrollbar-width: thin;
+}
+html::-webkit-scrollbar { width: 13px; height: 13px; }
+html::-webkit-scrollbar-track { background: var(--color-shell); }
+html::-webkit-scrollbar-thumb { background: var(--color-brand-soft); border: 3px solid var(--color-shell); border-radius: 999px; }
+html::-webkit-scrollbar-thumb:hover { background: var(--color-cyan); }
+html::-webkit-scrollbar-thumb:active { background: var(--color-mint); }
+html::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+html::-webkit-scrollbar-corner { background: var(--color-shell); }
 body { @apply bg-canvas text-ink; min-width: 320px; font-family: 'Manrope Variable', Manrope, sans-serif; overflow-x: hidden; }
 button, input, select, textarea { font: inherit; }
 ::selection { background: var(--color-yellow); color: var(--color-ink-dark); }
@@ -50,9 +64,30 @@ button, input, select, textarea { font: inherit; }
 .pattern-diagonal { background-image: repeating-linear-gradient(135deg, rgba(16,40,43,.13) 0 1px, transparent 1px 8px); }
 .pattern-dots { background-image: radial-gradient(rgba(16,40,43,.18) 1px, transparent 1px); background-size: 9px 9px; }
 .pattern-radial { background-image: repeating-radial-gradient(circle at 74% 20%, rgba(16,40,43,.13) 0 1px, transparent 1px 18px); }
-.scrollbar-subtle { scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
-.scrollbar-subtle::-webkit-scrollbar { width: 7px; height: 7px; }
-.scrollbar-subtle::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 999px; }
+/*
+ * Scrollbars de superficies oscuras. El borde del pulgar crea una separación
+ * con el contenido y sustituye el carril blanco nativo de Windows/WebKit.
+ */
+.scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brand-soft) var(--color-shell);
+  scrollbar-gutter: stable;
+}
+.scrollbar-subtle::-webkit-scrollbar { width: 13px; height: 13px; }
+.scrollbar-subtle::-webkit-scrollbar-track { background: var(--color-shell); border-radius: 999px; }
+.scrollbar-subtle::-webkit-scrollbar-thumb { background: var(--color-brand-soft); border: 3px solid var(--color-shell); border-radius: 999px; }
+.scrollbar-subtle::-webkit-scrollbar-thumb:hover { background: var(--color-cyan); }
+.scrollbar-subtle::-webkit-scrollbar-thumb:active { background: var(--color-mint); }
+.scrollbar-subtle::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+.scrollbar-subtle::-webkit-scrollbar-corner { background: var(--color-shell); }
+@media (hover: hover) {
+  .scrollbar-subtle:hover { scrollbar-color: var(--color-cyan) var(--color-shell); }
+}
+@media (pointer: coarse) {
+  .scrollbar-subtle { scrollbar-gutter: auto; }
+  .scrollbar-subtle::-webkit-scrollbar { width: 8px; height: 8px; }
+  .scrollbar-subtle::-webkit-scrollbar-thumb { border-width: 2px; }
+}
 .focus-ring:focus-visible { outline: 3px solid var(--color-yellow); outline-offset: 3px; }
 .text-balance { text-wrap: balance; }
 @keyframes surface-fade-in { from { opacity: 0; } to { opacity: 1; } }

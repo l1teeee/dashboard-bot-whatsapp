@@ -13,7 +13,7 @@ export function PublicOnly({ children }: PublicOnlyProps) {
   const location = useLocation();
 
   if (status === 'idle' || status === 'loading') {
-    return <RouteFallback />;
+    return <RouteFallback variant="public" />;
   }
 
   if (status === 'authenticated' && account) {

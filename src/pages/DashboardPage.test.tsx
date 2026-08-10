@@ -1,15 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { DashboardPage } from './DashboardPage';
+
+const { refetchMock } = vi.hoisted(() => ({ refetchMock: vi.fn() }));
 
 vi.mock('@/hooks/useOrders', () => ({
   useOrders: () => ({
     orders: [],
-    total: 0,
+    total: 3,
     isLoading: false,
     isError: false,
     error: null,
-    refetch: vi.fn(),
+    refetch: refetchMock,
     isFetching: false,
   }),
 }));
@@ -36,17 +38,19 @@ vi.mock('@/components/orders/OrderDetail', () => ({
 }));
 
 describe('DashboardPage', () => {
-  it('contains only the live operation, not analytics', () => {
+  it('concentra el contador y la actualización dentro de Flujo operativo', () => {
     render(<DashboardPage />);
 
     expect(screen.getByTestId('order-kanban')).toBeInTheDocument();
     expect(screen.queryByText(/resumen operativo/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/operación en vivo/i)).not.toBeInTheDocument();
 
-    const pageTitle = screen.getByRole('heading', { level: 1, name: /operación en vivo/i });
-    expect(pageTitle).toHaveClass('text-[clamp(1.9rem,3vw,2.75rem)]');
-
-    const liveRegion = screen.getByRole('region', { name: /operación en vivo/i });
+    const liveRegion = screen.getByRole('region', { name: /flujo operativo/i });
     expect(liveRegion).toHaveClass('lg:min-h-0', 'lg:flex-1', 'lg:overflow-hidden');
-    expect(screen.getByRole('heading', { level: 2, name: /operación en vivo/i })).toHaveClass('text-2xl');
+    expect(within(liveRegion).getByRole('heading', { level: 1, name: /flujo operativo/i })).toHaveClass('text-3xl');
+    expect(within(liveRegion).getByText('3 pedidos informados por el servidor')).toBeInTheDocument();
+
+    fireEvent.click(within(liveRegion).getByRole('button', { name: /actualizar/i }));
+    expect(refetchMock).toHaveBeenCalledTimes(1);
   });
 });

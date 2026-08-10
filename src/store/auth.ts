@@ -5,7 +5,7 @@ interface AuthState {
   accessToken: string | null;
   account: Account | null;
   tenant: TenantSummary | null;
-  status: 'idle' | 'loading' | 'authenticated' | 'anonymous';
+  status: 'idle' | 'loading' | 'authenticated' | 'anonymous' | 'unavailable';
   setSession: (data: SessionData) => void;
   clearSession: () => void;
   setStatus: (status: AuthState['status']) => void;

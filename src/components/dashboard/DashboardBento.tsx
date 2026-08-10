@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { KeyboardEvent, ReactNode } from 'react';
-import { GripVertical, RotateCcw } from 'lucide-react';
+import type { KeyboardEvent, ReactNode, Ref } from 'react';
+import { Check, Pencil, RotateCcw } from 'lucide-react';
 import { GridLayout, useContainerWidth } from 'react-grid-layout';
-import type { Layout, LayoutItem } from 'react-grid-layout';
+import type { Layout, LayoutItem, ResizeHandleAxis } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+import './DashboardBento.css';
 import { Button } from '@/components/ui';
 import type { getDashboardMetrics } from '@/lib/dashboardMetrics';
 import { OrderFlowCard } from './OrderFlowCard';
@@ -54,16 +55,38 @@ const getStorage = () => {
   }
 };
 
+// react-resizable clona el elemento devuelto y le inyecta los eventos de
+// mouse/touch. Por eso debe ser un nodo DOM directo: envolverlo en un
+// componente que no propague esos props deja un tirador visible pero inerte.
+function renderWidgetResizeHandle(axis: ResizeHandleAxis, handleRef: Ref<HTMLElement>) {
+  return (
+    <span
+      ref={handleRef as Ref<HTMLSpanElement>}
+      className={`dashboard-resize-handle dashboard-resize-handle-${axis} react-resizable-handle react-resizable-handle-${axis}`}
+      data-resize-axis={axis}
+      data-testid={`resize-handle-${axis}`}
+      aria-hidden="true"
+    >
+      <span className="dashboard-resize-handle-dot" />
+    </span>
+  );
+}
+
 export function DashboardBento({ metrics, onSelect }: DashboardBentoProps) {
   const { width, containerRef, mounted } = useContainerWidth({ measureBeforeMount: true });
   const [layout, setLayout] = useState<LayoutItem[]>(() => loadDashboardLayout(getStorage()));
   const [announcement, setAnnouncement] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedWidget, setSelectedWidget] = useState<DashboardWidgetId | null>(null);
   const isDesktop = mounted && width >= DASHBOARD_DESKTOP_MIN_WIDTH;
   const hasCustomLayout = !isDefaultDashboardLayout(layout);
 
   useEffect(() => {
-    saveDashboardLayout(layout, getStorage());
-  }, [layout]);
+    if (!isDesktop && isEditing) {
+      setIsEditing(false);
+      setSelectedWidget(null);
+    }
+  }, [isDesktop, isEditing]);
 
   const widgets = useMemo<DashboardWidget[]>(() => [
     {
@@ -94,74 +117,130 @@ export function DashboardBento({ metrics, onSelect }: DashboardBentoProps) {
     },
   ], [metrics, onSelect]);
 
+  const persistLayout = useCallback((nextLayout: Layout) => {
+    const normalized = nextLayout.map((item) => ({ ...item }));
+    setLayout(normalized);
+    saveDashboardLayout(normalized, getStorage());
+  }, []);
+
   const handleLayoutChange = useCallback((nextLayout: Layout) => {
+    // Mantiene la previsualizaci\u00f3n fluida; el guardado ocurre al soltar el gesto.
     setLayout(nextLayout.map((item) => ({ ...item })));
   }, []);
 
-  const handleKeyboardLayout = useCallback((widgetId: DashboardWidgetId, event: KeyboardEvent<HTMLButtonElement>) => {
+  const handleKeyboardLayout = useCallback((widgetId: DashboardWidgetId, event: KeyboardEvent<HTMLDivElement>) => {
     const direction = {
       ArrowLeft: [-1, 0],
       ArrowRight: [1, 0],
       ArrowUp: [0, -1],
       ArrowDown: [0, 1],
     }[event.key];
-    if (!direction) return;
+    if (!direction || !isEditing) return;
 
     event.preventDefault();
     event.stopPropagation();
     const [horizontal, vertical] = direction;
-    setLayout((current) => updateDashboardLayout(
-      current,
+    const nextLayout = updateDashboardLayout(
+      layout,
       widgetId,
       event.shiftKey
         ? { type: 'resize', dw: horizontal, dh: vertical }
         : { type: 'move', dx: horizontal, dy: vertical },
-    ));
+    );
+    persistLayout(nextLayout);
 
-    const action = event.shiftKey ? 'Tamaño actualizado' : 'Posición actualizada';
+    const action = event.shiftKey ? 'Tama\u00f1o actualizado' : 'Posici\u00f3n actualizada';
     setAnnouncement(`${action}: ${DASHBOARD_WIDGET_LABELS[widgetId]}.`);
-  }, []);
+  }, [isEditing, layout, persistLayout]);
 
   const desktopChildren = useMemo(() => widgets.map((widget) => (
     <div
       key={widget.id}
-      className="group relative [&_.dashboard-widget-content>*]:h-full [&_.dashboard-widget-content>*]:w-full"
+      data-widget-id={widget.id}
+      className={`dashboard-widget-frame group relative h-full ${isEditing ? 'dashboard-widget-frame-editing' : ''} ${selectedWidget === widget.id ? 'dashboard-widget-frame-selected' : ''}`}
+      onPointerDown={() => {
+        if (isEditing) setSelectedWidget(widget.id);
+      }}
+      onFocus={() => {
+        if (isEditing) setSelectedWidget(widget.id);
+      }}
+      onKeyDown={(event) => handleKeyboardLayout(widget.id, event)}
+      tabIndex={isEditing ? 0 : -1}
+      role={isEditing ? 'group' : 'region'}
+      aria-label={isEditing ? `Editar ${DASHBOARD_WIDGET_LABELS[widget.id]}` : DASHBOARD_WIDGET_LABELS[widget.id]}
+      aria-describedby={isEditing ? 'dashboard-layout-help' : undefined}
+      aria-keyshortcuts={isEditing ? 'ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown' : undefined}
     >
-      <button
-        type="button"
-        className="dashboard-drag-handle focus-ring absolute -top-3.5 right-4 z-20 grid h-8 w-11 cursor-grab touch-none place-items-center rounded-full border border-border bg-shell text-ink opacity-80 shadow-sm transition-opacity hover:opacity-100 focus:cursor-grabbing focus:opacity-100 active:cursor-grabbing"
-        aria-label={`Organizar ${DASHBOARD_WIDGET_LABELS[widget.id]}`}
-        aria-describedby="dashboard-layout-help"
-        aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Shift+ArrowLeft Shift+ArrowRight Shift+ArrowUp Shift+ArrowDown"
-        title="Arrastra para mover. Flechas: mover. Mayús + flechas: cambiar tamaño."
-        onKeyDown={(event) => handleKeyboardLayout(widget.id, event)}
+      {isEditing && selectedWidget === widget.id && (
+        <span className="dashboard-widget-size" aria-live="polite">
+          Ancho {layout.find((item) => item.i === widget.id)?.w}
+          {' \u00b7 '}
+          Alto {layout.find((item) => item.i === widget.id)?.h}
+        </span>
+      )}
+      <div
+        className="dashboard-widget-content h-full [&>*]:h-full [&>*]:w-full"
+        inert={isEditing}
+        aria-hidden={isEditing || undefined}
       >
-        <GripVertical className="h-4 w-4" aria-hidden="true" />
-      </button>
-      <div className="dashboard-widget-content h-full">{widget.content}</div>
+        {widget.content}
+      </div>
     </div>
-  )), [handleKeyboardLayout, widgets]);
+  )), [handleKeyboardLayout, isEditing, layout, selectedWidget, widgets]);
 
   const resetLayout = () => {
-    setLayout(resetDashboardLayout());
-    setAnnouncement('Se restauró la distribución original de los widgets.');
+    const nextLayout = resetDashboardLayout();
+    persistLayout(nextLayout);
+    setAnnouncement('Se restaur\u00f3 la distribuci\u00f3n original de los widgets.');
+  };
+
+  const enterEditing = () => {
+    if (!isDesktop) return;
+    setIsEditing(true);
+    setSelectedWidget('revenue');
+    setAnnouncement('Edici\u00f3n activa. Arrastra una tarjeta o usa los puntos laterales para cambiar su tama\u00f1o.');
+  };
+
+  const finishEditing = () => {
+    setIsEditing(false);
+    setSelectedWidget(null);
+    setAnnouncement('Distribuci\u00f3n guardada.');
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface/70 p-3 text-ink shadow-sm sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm font-bold">Distribución personalizable</p>
-          <p id="dashboard-layout-help" className="mt-0.5 text-xs text-ink-soft">
+      <div className={`dashboard-layout-toolbar ${isEditing ? 'dashboard-layout-toolbar-active' : ''}`}>
+        <div className="min-w-0">
+          <p className="dashboard-layout-toolbar-title">
+            {isEditing ? 'Edici\u00f3n activa' : 'Distribuci\u00f3n personalizable'}
+          </p>
+          <p id="dashboard-layout-help" className="dashboard-layout-toolbar-copy">
             {isDesktop
-              ? 'Arrastra el asa para mover; usa la esquina inferior para redimensionar. Con teclado: flechas para mover y Mayús + flechas para cambiar tamaño.'
-              : 'En pantallas pequeñas los widgets se muestran apilados. La personalización está disponible en escritorio.'}
+              ? isEditing
+                ? 'Arrastra cualquier parte de una tarjeta para moverla. Usa los cuatro puntos laterales para cambiar ancho o alto.'
+                : 'Personaliza el espacio de trabajo cuando lo necesites. Tus cambios se guardan autom\u00e1ticamente.'
+              : 'En pantallas peque\u00f1as los widgets se muestran apilados. La personalizaci\u00f3n est\u00e1 disponible en escritorio.'}
           </p>
         </div>
-        <Button type="button" variant="ghost" size="sm" disabled={!hasCustomLayout} onClick={resetLayout}>
-          <RotateCcw className="h-4 w-4" aria-hidden="true" />
-          Restablecer
-        </Button>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {isEditing ? (
+            <>
+              <Button type="button" variant="ghost" size="sm" disabled={!hasCustomLayout} onClick={resetLayout}>
+                <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                Restablecer
+              </Button>
+              <Button type="button" variant="success" size="sm" onClick={finishEditing}>
+                <Check className="h-4 w-4" aria-hidden="true" />
+                Listo
+              </Button>
+            </>
+          ) : (
+            <Button type="button" variant="secondary" size="sm" disabled={!isDesktop} onClick={enterEditing} title={isDesktop ? 'Editar la distribuci\u00f3n de widgets' : 'Disponible en escritorio'}>
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+              Editar
+            </Button>
+          )}
+        </div>
       </div>
 
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
@@ -172,15 +251,30 @@ export function DashboardBento({ metrics, onSelect }: DashboardBentoProps) {
             width={width}
             layout={layout}
             gridConfig={gridConfig}
-            dragConfig={{ enabled: true, bounded: true, handle: '.dashboard-drag-handle' }}
-            resizeConfig={{ enabled: true, handles: ['se'] }}
-            className="[&>.react-grid-placeholder]:!rounded-[30px] [&>.react-grid-placeholder]:!bg-brand-soft [&>.react-grid-placeholder]:!opacity-45 [&>.react-resizable-handle]:!h-8 [&>.react-resizable-handle]:!w-8 [&>.react-resizable-handle]:!opacity-70"
-            onLayoutChange={handleLayoutChange}
-            onDragStop={(_next, _oldItem, newItem) => {
-              if (newItem) setAnnouncement(`Posición actualizada: ${DASHBOARD_WIDGET_LABELS[newItem.i as DashboardWidgetId]}.`);
+            dragConfig={{ enabled: isEditing, bounded: true, threshold: 8, cancel: '.dashboard-resize-handle' }}
+            resizeConfig={{
+              enabled: isEditing,
+              handles: ['n', 'e', 's', 'w'],
+              handleComponent: renderWidgetResizeHandle,
             }}
-            onResizeStop={(_next, _oldItem, newItem) => {
-              if (newItem) setAnnouncement(`Tamaño actualizado: ${DASHBOARD_WIDGET_LABELS[newItem.i as DashboardWidgetId]}.`);
+            className={`dashboard-widget-grid ${isEditing ? 'dashboard-widget-grid-editing' : ''}`}
+            onLayoutChange={handleLayoutChange}
+            onDragStop={(nextLayout, _oldItem, newItem) => {
+              persistLayout(nextLayout);
+              if (newItem) setAnnouncement(`Posici\u00f3n actualizada: ${DASHBOARD_WIDGET_LABELS[newItem.i as DashboardWidgetId]}.`);
+            }}
+            onResizeStart={(_nextLayout, _oldItem, newItem) => {
+              if (newItem) setSelectedWidget(newItem.i as DashboardWidgetId);
+            }}
+            onResize={(nextLayout, _oldItem, newItem) => {
+              // Actualiza la insignia mientras se mueve el tirador; la
+              // persistencia sigue ocurriendo unicamente al terminar.
+              setLayout(nextLayout.map((item) => ({ ...item })));
+              if (newItem) setSelectedWidget(newItem.i as DashboardWidgetId);
+            }}
+            onResizeStop={(nextLayout, _oldItem, newItem) => {
+              persistLayout(nextLayout);
+              if (newItem) setAnnouncement(`Tama\u00f1o actualizado: ${DASHBOARD_WIDGET_LABELS[newItem.i as DashboardWidgetId]}.`);
             }}
           >
             {desktopChildren}
@@ -188,7 +282,14 @@ export function DashboardBento({ metrics, onSelect }: DashboardBentoProps) {
         ) : (
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             {widgets.map((widget) => (
-              <div key={widget.id} className={widget.id === 'revenue' || widget.id === 'order-flow' ? 'md:col-span-2' : ''}>
+              <div
+                key={widget.id}
+                data-widget-id={widget.id}
+                role="region"
+                aria-label={DASHBOARD_WIDGET_LABELS[widget.id]}
+                tabIndex={-1}
+                className={widget.id === 'revenue' || widget.id === 'order-flow' ? 'md:col-span-2' : ''}
+              >
                 {widget.content}
               </div>
             ))}

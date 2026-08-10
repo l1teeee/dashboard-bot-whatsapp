@@ -26,11 +26,13 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
 };
 
 export const DEFAULT_DASHBOARD_LAYOUT: Layout = [
-  { i: 'revenue', x: 0, y: 0, w: 7, h: 9, minW: 5, minH: 9, maxW: 12, maxH: 14 },
-  { i: 'order-flow', x: 7, y: 0, w: 5, h: 9, minW: 4, minH: 8, maxW: 12, maxH: 14 },
-  { i: 'queue', x: 0, y: 9, w: 4, h: 7, minW: 3, minH: 6, maxW: 12, maxH: 12 },
-  { i: 'status-mix', x: 4, y: 9, w: 4, h: 7, minW: 3, minH: 7, maxW: 12, maxH: 12 },
-  { i: 'recent-orders', x: 8, y: 9, w: 4, h: 9, minW: 3, minH: 9, maxW: 12, maxH: 16 },
+  // Los mínimos dejan al menos dos pasos de reducción desde la vista inicial.
+  // Así cada tarjeta se puede ensanchar, estrechar, alargar y acortar de verdad.
+  { i: 'revenue', x: 0, y: 0, w: 7, h: 9, minW: 4, minH: 6, maxW: 12, maxH: 18 },
+  { i: 'order-flow', x: 7, y: 0, w: 5, h: 9, minW: 4, minH: 6, maxW: 12, maxH: 18 },
+  { i: 'queue', x: 0, y: 9, w: 4, h: 7, minW: 3, minH: 5, maxW: 12, maxH: 14 },
+  { i: 'status-mix', x: 4, y: 9, w: 4, h: 7, minW: 3, minH: 5, maxW: 12, maxH: 14 },
+  { i: 'recent-orders', x: 8, y: 9, w: 4, h: 9, minW: 3, minH: 6, maxW: 12, maxH: 18 },
 ];
 
 type StoredLayout = {

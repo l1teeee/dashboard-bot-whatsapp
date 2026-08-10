@@ -34,6 +34,13 @@ const NON_REFRESHABLE = [
 
 let refreshPromise: Promise<SessionData> | null = null;
 
+export function isDefinitiveSessionRejection(error: unknown): boolean {
+  return (
+    error instanceof ApiError &&
+    (error.status === 401 || error.status === 403)
+  );
+}
+
 async function refreshSession(): Promise<SessionData> {
   const response = await fetch(`${BASE_URL}/api/auth/refresh`, {
     method: 'POST',
@@ -66,6 +73,36 @@ async function refreshSession(): Promise<SessionData> {
     'Respuesta del servidor sin estructura esperada',
     response.status,
   );
+}
+
+/**
+ * Shares the refresh-token exchange between app startup and requests that race
+ * with an expired access token.  In development StrictMode intentionally runs
+ * effects more than once; two independent refresh calls can otherwise rotate
+ * the cookie twice and leave the store anonymous even when the first one
+ * succeeded.
+ */
+export function refreshAccessToken(): Promise<SessionData> {
+  if (!refreshPromise) {
+    refreshPromise = refreshSession()
+      .then((sessionData) => {
+        useAuthStore.getState().setSession(sessionData);
+        return sessionData;
+      })
+      .catch((err) => {
+        // A timeout, gateway error, or malformed temporary response is not a
+        // logout. Keep a known session intact and let the caller show a retry.
+        if (isDefinitiveSessionRejection(err)) {
+          useAuthStore.getState().clearSession();
+        }
+        throw err;
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
 }
 
 export async function request<T>(
@@ -107,27 +144,16 @@ export async function request<T>(
     }
 
     if (response.status === 401 && !skipRefresh && !NON_REFRESHABLE.some((p) => path.startsWith(p))) {
-      if (!refreshPromise) {
-        refreshPromise = refreshSession()
-          .then((sessionData) => {
-            useAuthStore.getState().setSession(sessionData);
-            refreshPromise = null;
-            return sessionData;
-          })
-          .catch((err) => {
-            useAuthStore.getState().clearSession();
-            refreshPromise = null;
-            throw err;
-          });
-      }
-
       // Solo el fallo del refresh se traduce a "sesion expirada". El reintento
       // queda fuera del try a proposito: si devuelve un 404 o un 409, ese error
       // debe llegar tal cual a quien llamo, no disfrazado de sesion caducada.
       try {
-        await refreshPromise;
-      } catch {
-        throw new ApiError('UNAUTHORIZED', 'Sesión expirada', 401);
+        await refreshAccessToken();
+      } catch (error) {
+        if (isDefinitiveSessionRejection(error)) {
+          throw new ApiError('UNAUTHORIZED', 'Sesión expirada', 401);
+        }
+        throw error;
       }
 
       return request<T>(path, { ...options, skipRefresh: true });

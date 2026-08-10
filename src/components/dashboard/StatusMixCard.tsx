@@ -17,7 +17,7 @@ export function StatusMixCard({ counts, rate }: { counts: Record<OrderStatus, nu
   }));
 
   return (
-    <section className="flex h-full flex-col rounded-[30px] border border-ink-dark bg-mint p-5 text-ink-dark neo-shadow">
+    <section className="flex h-full min-h-0 flex-col overflow-hidden rounded-[30px] border border-ink-dark bg-mint p-5 text-ink-dark neo-shadow">
       <p className="kicker">Estados del lote</p>
       <div className="mt-1 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-2">
         <h2 className="font-display text-2xl font-bold uppercase">Mezcla actual</h2>
@@ -25,7 +25,7 @@ export function StatusMixCard({ counts, rate }: { counts: Record<OrderStatus, nu
           Éxito entre cerrados<br />{Math.round(rate * 100)}%
         </span>
       </div>
-      <div className="mt-2 min-h-32 flex-1">
+      <div className="mt-2 min-h-0 flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -42,7 +42,7 @@ export function StatusMixCard({ counts, rate }: { counts: Record<OrderStatus, nu
           </PieChart>
         </ResponsiveContainer>
       </div>
-      <ul className="grid grid-cols-2 gap-2">
+      <ul className="grid shrink-0 grid-cols-2 gap-2">
         {data.map((item) => (
           <li key={item.status} className="flex items-center gap-2 text-xs font-bold">
             <span
